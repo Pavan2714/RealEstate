@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       "/api": {
-        target: "https://real-estate-vm3c.vercel.app", // Use your Vercel backend URL
+        target: process.env.VITE_BACKEND_URL, // Use your Vercel backend URL
         secure: false,
         changeOrigin: true,
       },
