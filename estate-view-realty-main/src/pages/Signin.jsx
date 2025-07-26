@@ -9,8 +9,6 @@ import {
 import OAuth from "../components/OAuth";
 import { Eye, EyeOff, Mail, Lock, Home, ArrowRight } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
-
 export default function Signin() {
   const [formData, setFormData] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -43,7 +41,7 @@ export default function Signin() {
 
     try {
       dispatch(signInStart());
-      const res = await fetch(`${API_URL}/api/auth/signin`, {
+      const res = await fetch("/api/auth/signin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

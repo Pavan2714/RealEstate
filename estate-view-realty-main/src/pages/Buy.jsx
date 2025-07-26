@@ -9,8 +9,6 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 import Footer from "@/components/Footer";
 import { useSelector } from "react-redux";
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
-
 const Buy = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [properties, setProperties] = useState([]);
@@ -25,10 +23,8 @@ const Buy = () => {
 
     // Fetch all sale listings
     Promise.all([
-      fetch(`${API_URL}/api/listing?type=sale`).then((res) => res.json()),
-      fetch(`${API_URL}/api/buying?buyerId=${user._id}`).then((res) =>
-        res.json()
-      ),
+      fetch("/api/listing?type=sale").then((res) => res.json()),
+      fetch(`/api/buying?buyerId=${user._id}`).then((res) => res.json()),
     ])
       .then(([allProperties, buyings]) => {
         // Get all listingIds the user has made an offer on
@@ -54,7 +50,7 @@ const Buy = () => {
     const duration = null; // Add this field (not required for buy, but expected by controller)
 
     try {
-      const res = await fetch(`${API_URL}/api/buying/create`, {
+      const res = await fetch("/api/buying/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

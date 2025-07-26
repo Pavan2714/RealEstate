@@ -12,8 +12,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import defaultProfileImg from "../assets/profile.png";
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
-
 export default function Profile() {
   const fileRef = useRef(null);
   const dispatch = useDispatch();
@@ -55,7 +53,7 @@ export default function Profile() {
       reader.onload = async () => {
         try {
           const base64Image = reader.result;
-          const res = await fetch(`${API_URL}/api/user/upload/${user._id}`, {
+          const res = await fetch(`/api/user/upload/${user._id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ avatar: base64Image }),
@@ -101,7 +99,7 @@ export default function Profile() {
     setUpdateError(null);
     setUpdateSuccess(false);
     try {
-      const res = await fetch(`${API_URL}/api/user/update/${user._id}`, {
+      const res = await fetch(`/api/user/update/${user._id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -129,7 +127,7 @@ export default function Profile() {
 
     try {
       dispatch(deleteUserStart());
-      const res = await fetch(`${API_URL}/api/user/delete/${user._id}`, {
+      const res = await fetch(`/api/user/delete/${user._id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -152,7 +150,7 @@ export default function Profile() {
   const handleSignOut = async () => {
     try {
       dispatch(signOutUserStart());
-      const res = await fetch(`${API_URL}/api/auth/signout`, {
+      const res = await fetch("/api/auth/signout", {
         method: "POST",
         credentials: "include",
       });

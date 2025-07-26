@@ -29,7 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import heroImage from "@/assets/hero-home.jpg";
 
-const API_URL = import.meta.env.VITE_BACKEND_URL + "/api/listing";
+const API_URL = "/api/listing";
 
 const HeroSection = () => {
   const [address, setAddress] = useState("");

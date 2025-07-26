@@ -8,8 +8,6 @@ import PropertyCard from "@/components/PropertyCard";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import Footer from "@/components/Footer";
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
-
 const Index = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [properties, setProperties] = useState([]);
@@ -17,7 +15,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/listing`)
+    fetch("/api/listing")
       .then((res) => res.json())
       .then((data) => {
         setProperties(data);
