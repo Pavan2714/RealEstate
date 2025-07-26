@@ -22,11 +22,10 @@ mongoose
   });
 
 const app = express(); // Create an Express application instance
-// const PORT = process.env.PORT || 3000; // Use PORT from .env or default to 3000
-// // ✅ Start the server on port 3000
-// app.listen(PORT, () => {
-//   console.log("Server is running on port 3000");
-// });
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 app.get("/", (req, res) => {
   res.send("Backend is working");
