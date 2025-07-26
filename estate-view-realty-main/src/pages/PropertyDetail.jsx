@@ -22,6 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+
 const PropertyDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -39,7 +41,7 @@ const PropertyDetail = () => {
 
         console.log("Fetching property with ID:", id);
 
-        const response = await fetch(`/api/listing/${id}`);
+        const response = await fetch(`${API_URL}/api/listing/${id}`);
 
         if (!response.ok) {
           if (response.status === 404) {

@@ -1,9 +1,11 @@
-import  {getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { app } from "../firebase";
 import { useDispatch } from "react-redux";
 import { signInSuccess } from "../redux/user/userSlice";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function OAuth() {
   const dispatch = useDispatch();
@@ -35,7 +37,7 @@ export default function OAuth() {
     }
 
     try {
-      const res = await fetch("/api/auth/google", {
+      const res = await fetch(`${API_URL}/api/auth/google`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +51,7 @@ export default function OAuth() {
       });
       const data = await res.json();
       dispatch(signInSuccess(data));
-      navigate('/');
+      navigate("/");
     } catch (error) {
       console.log("could not signin with google after role selection", error);
     }
@@ -59,12 +61,16 @@ export default function OAuth() {
     <div className="p-3 max-w-lg mx-auto">
       {showRoleSelection ? (
         <div className="flex flex-col gap-4">
-          <h2 className="text-2xl text-center font-semibold my-7">Select Your Role</h2>
+          <h2 className="text-2xl text-center font-semibold my-7">
+            Select Your Role
+          </h2>
           <button
             type="button"
             onClick={() => setSelectedRole("buyer")}
             className={`w-full py-3 rounded-xl font-semibold text-base sm:text-lg transition-colors duration-300 ${
-              selectedRole === "buyer" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-800 hover:bg-blue-100"
+              selectedRole === "buyer"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-800 hover:bg-blue-100"
             }`}
           >
             I am a Buyer
@@ -73,7 +79,9 @@ export default function OAuth() {
             type="button"
             onClick={() => setSelectedRole("seller")}
             className={`w-full py-3 rounded-xl font-semibold text-base sm:text-lg transition-colors duration-300 ${
-              selectedRole === "seller" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-800 hover:bg-green-100"
+              selectedRole === "seller"
+                ? "bg-green-500 text-white"
+                : "bg-gray-200 text-gray-800 hover:bg-green-100"
             }`}
           >
             I am a Seller

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+
 export default function CreateListing() {
   const { user } = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -148,7 +150,7 @@ export default function CreateListing() {
 
       console.log("Sending listing data:", listingData);
 
-      const res = await fetch("/api/listing/create", {
+      const res = await fetch(`${API_URL}/api/listing/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
