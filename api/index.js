@@ -1,5 +1,4 @@
-import express from "express"; // Import Express framework
-import mongoose from "mongoose"; // For MongoDB connection
+import express from "express"; // Import Express framework // For MongoDB connection
 import dotenv from "dotenv"; // To load environment variables from .env file
 import Userrouter from "./routes/user.route.js"; // Importing user routes
 import authRouter from "./routes/auth.routes.js"; // Importing authentication routes
@@ -8,28 +7,16 @@ import cookieParser from "cookie-parser"; // To parse cookies from requests
 import buyingRouter from "./routes/Buying.routes.js"; // Importing buying routes
 import rentalRouter from "./routes/rental.routes.js";
 import contactRouter from "./routes/contact.route.js";
+import connectDB from "./config/db.js";
 
 dotenv.config(); // Load environment variables from .env file
 
-// ✅ Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO) // process.env.MONGO contains the DB connection string from .env
-  .then(() => {
-    console.log("Connected to MongoDB"); // Log success
-  })
-  .catch((err) => {
-    console.error("Error connecting to MongoDB:", err); // Log error if connection fails
-  });
-
 const app = express(); // Create an Express application instance
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const PORT = 3000;
 
-app.get("/", (req, res) => {
-  res.send("Backend is working");
-});
+// ✅ Connect to MongoDB
+await connectDB(); // Connect to MongoDB using the config function
+
 // ✅ Middlewares
 
 // Increase JSON payload limit for base64 images (default is too small)
@@ -38,6 +25,7 @@ app.use(express.urlencoded({ limit: "10mb", extended: true })); // Handles URL-e
 app.use(cookieParser()); // Parses cookies from incoming requests
 
 // ✅ Define API routes
+app.get("/", (req, res) => res.send("Server is Live!"));
 app.use("/api/user", Userrouter); // User-related routes (e.g., profile, update user)
 app.use("/api/auth", authRouter); // Authentication routes (e.g., login, register)
 app.use("/api/listing", listingRouter); // Property listing routes (CRUD for properties)
@@ -57,4 +45,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-export default app; // Export the Express app for use in other files (e.g., server.js)
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+// Export the Express app for use in other files (e.g., server.js)
