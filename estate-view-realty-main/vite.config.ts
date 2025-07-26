@@ -13,7 +13,8 @@ export default defineConfig(({ mode }) => {
       port: 8080,
       proxy: {
         "/api": {
-          target: "https://real-estate-backend-lovat.vercel.app",
+          target:
+            "https://vercel.com/pavans-projects-2a1fb2c9/real-estate-backend/9Hdq57aUZCURjjGvgfVtd7WL9qwQ",
           secure: false,
           changeOrigin: true,
           configure: (proxy, _options) => {
