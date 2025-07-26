@@ -2,6 +2,9 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export default defineConfig(({ mode }) => {
   // Debug: Log the environment variable
@@ -13,8 +16,7 @@ export default defineConfig(({ mode }) => {
       port: 8080,
       proxy: {
         "/api": {
-          target:
-            "https://vercel.com/pavans-projects-2a1fb2c9/real-estate-backend/9Hdq57aUZCURjjGvgfVtd7WL9qwQ",
+          target: process.env.VITE_BACKEND_URL || "http://localhost:3000",
           secure: false,
           changeOrigin: true,
           configure: (proxy, _options) => {
