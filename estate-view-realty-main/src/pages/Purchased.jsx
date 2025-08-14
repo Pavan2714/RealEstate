@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+
 const Purchased = () => {
   const user = useSelector((state) => state.user.user);
   const [buyings, setBuyings] = useState([]);
@@ -19,8 +21,12 @@ const Purchased = () => {
 
     // Fetch both buying and rental offers
     Promise.all([
-      fetch(`/api/buying?buyerId=${user._id}`).then((res) => res.json()),
-      fetch(`/api/rental?renterId=${user._id}`).then((res) => res.json()),
+      fetch(`${API_URL}/api/buying?buyerId=${user._id}`).then((res) =>
+        res.json()
+      ),
+      fetch(`${API_URL}/api/rental?renterId=${user._id}`).then((res) =>
+        res.json()
+      ),
     ])
       .then(([buyingData, rentalData]) => {
         setBuyings(buyingData || []);
@@ -35,7 +41,8 @@ const Purchased = () => {
 
   // Remove offer handler
   const handleRemoveOffer = async (offerId, type) => {
-    const endpoint = type === "Buy" ? "/api/buying" : "/api/rental";
+    const endpoint =
+      type === "Buy" ? `${API_URL}/api/buying` : `${API_URL}/api/rental`;
     try {
       const res = await fetch(`${endpoint}/${offerId}`, { method: "DELETE" });
       if (res.ok) {
@@ -44,8 +51,6 @@ const Purchased = () => {
         } else {
           setRentals((prev) => prev.filter((offer) => offer._id !== offerId));
         }
-        // Optionally, show a toast or alert
-        // After removal, the property will show up again in Buy or Rent section due to your filtering logic
       } else {
         alert("Failed to remove offer.");
       }
