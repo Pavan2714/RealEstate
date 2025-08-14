@@ -14,6 +14,13 @@ dotenv.config(); // Load environment variables from .env file
 const app = express(); // Create an Express application instance
 const PORT = 3000;
 
+app.use(
+  cors({
+    origin: "https://real-estate-frontend-zeta-blond.vercel.app", // <-- your frontend domain
+    credentials: true,
+  })
+);
+
 // ✅ Connect to MongoDB
 await connectDB(); // Connect to MongoDB using the config function
 
