@@ -17,7 +17,7 @@ const PORT = 3000;
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL, // Use value from .env
+    origin: process.env.VITE_FRONTEND_URL, // Use value from .env
     credentials: true,
   })
 );
