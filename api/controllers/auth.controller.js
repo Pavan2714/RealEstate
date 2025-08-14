@@ -5,31 +5,30 @@ import jwt from "jsonwebtoken"; // Importing JWT for token generation
 export const signup = async (req, res, next, role) => {
   const { username, email, password } = req.body;
 
-  // Validation: username must be present
   if (!username) {
     return res
       .status(400)
       .json({ success: false, message: "Username is required" });
   }
 
-  const hashedPassword = bcrypt.hashSync(password, 10); // Hashing the password
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const newuser = new User({ username, email, password: hashedPassword, role });
   try {
     await newuser.save();
+    // Create JWT and set cookie
+    const token = jwt.sign({ id: newuser._id }, process.env.JWT_SECRET);
+    const { password: pass, ...rest } = newuser._doc;
     res
+      .cookie("access_token", token, { httpOnly: true })
       .status(201)
-      .json(
-        `${role.charAt(0).toUpperCase() + role.slice(1)} created successfully`
-      );
+      .json(rest);
   } catch (error) {
-    // Handle duplicate email error
     if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
       return res.status(400).json({
         success: false,
         message: "User already exists with this email!",
       });
     }
-    // For all other errors, send a generic message
     res.status(500).json({
       success: false,
       message: "Something went wrong. Please try again later.",
