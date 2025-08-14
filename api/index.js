@@ -1,4 +1,5 @@
 import express from "express"; // Import Express framework // For MongoDB connection
+import cors from "cors";
 import dotenv from "dotenv"; // To load environment variables from .env file
 import Userrouter from "./routes/user.route.js"; // Importing user routes
 import authRouter from "./routes/auth.routes.js"; // Importing authentication routes
