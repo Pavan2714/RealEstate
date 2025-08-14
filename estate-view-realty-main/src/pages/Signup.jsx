@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import OAuth from "../components/OAuth";
 
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+
 export default function Signup() {
   const [formData, setFormData] = useState({ role: "buyer" });
   const [showPassword, setShowPassword] = useState(false);
@@ -43,8 +45,8 @@ export default function Signup() {
 
     const endpoint =
       formData.role === "seller"
-        ? "/api/auth/signup/seller"
-        : "/api/auth/signup/buyer";
+        ? `${API_URL}/api/auth/signup/seller`
+        : `${API_URL}/api/auth/signup/buyer`;
 
     try {
       const res = await fetch(endpoint, {
