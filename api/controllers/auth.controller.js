@@ -1,6 +1,6 @@
 import User from "../models/user.model.js"; // Importing User model
 import bcrypt from "bcryptjs"; // Importing bcrypt for password hashing
-import{ errorHandler } from "../utils/error.js"; // Importing error handler utility
+import { errorHandler } from "../utils/error.js"; // Importing error handler utility
 import jwt from "jsonwebtoken"; // Importing JWT for token generation
 export const signup = async (req, res, next, role) => {
   const { username, email, password } = req.body;
@@ -45,13 +45,13 @@ export const signin = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     const validUser = await User.findOne({ email });
-    if (!validUser) return next(errorHandler(404, 'User not found!'));
+    if (!validUser) return next(errorHandler(404, "User not found!"));
     const validPassword = bcrypt.compareSync(password, validUser.password);
-    if (!validPassword) return next(errorHandler(401, 'Wrong credentials!'));
+    if (!validPassword) return next(errorHandler(401, "Wrong credentials!"));
     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
     const { password: pass, ...rest } = validUser._doc;
     res
-      .cookie('access_token', token, { httpOnly: true })
+      .cookie("access_token", token, { httpOnly: true })
       .status(200)
       .json(rest);
   } catch (error) {
@@ -66,42 +66,44 @@ export const google = async (req, res, next) => {
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
       const { password, ...rest } = user._doc;
       return res
-        .cookie('access_token', token, { httpOnly: true })
+        .cookie("access_token", token, { httpOnly: true })
         .status(200)
         .json(rest);
-    }
-    else {
-      const generatedPassword = Math.random().toString(36).slice(-8)+ Math.random().toString(36).slice(-8); // Generate a random password;
+    } else {
+      const generatedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8); // Generate a random password;
       const hashedPassword = bcrypt.hashSync(generatedPassword, 10); // Hash the generated password
-     const rawUsername = req.body.username;
-const processedUsername =
-  rawUsername && typeof rawUsername === "string" && rawUsername.trim().length > 0
-    ? rawUsername.split(" ").join("").toLowerCase() + Math.random().toString(36).slice(-4)
-    : "user" + Math.random().toString(36).slice(-4);
+      const rawUsername = req.body.username;
+      const processedUsername =
+        rawUsername &&
+        typeof rawUsername === "string" &&
+        rawUsername.trim().length > 0
+          ? rawUsername.split(" ").join("").toLowerCase() +
+            Math.random().toString(36).slice(-4)
+          : "user" + Math.random().toString(36).slice(-4);
 
-const newUser = new User({
-  username: processedUsername,
-  email: req.body.email,
-  password: hashedPassword,
-  avatar:
+      const newUser = new User({
+        username: processedUsername,
+        email: req.body.email,
+        password: hashedPassword,
+        avatar:
           photo ||
           "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-  role: role || "buyer",
-});
+        role: role || "buyer",
+      });
       await newUser.save();
       const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
       const { password, ...rest } = newUser._doc;
-       res
-        .cookie('access_token', token, { httpOnly: true })
+      res
+        .cookie("access_token", token, { httpOnly: true })
         .status(200)
         .json(rest);
     }
-  }
-   
-  catch (error) {
+  } catch (error) {
     next(error);
   }
-}
+};
 // Upload profile image
 export const uploadProfileImage = async (req, res, next) => {
   try {
@@ -168,12 +170,20 @@ export const signOut = async (req, res, next) => {
 };
 
 export const deleteUser = async (req, res, next) => {
-  if (req.user.id !== req.params.id) {
+  // Debug: log user and params
+  if (!req.user) {
+    return next(errorHandler(401, "Authentication required!"));
+  }
+
+  if (req.user.id.toString() !== req.params.id.toString()) {
     return next(errorHandler(401, "You can only delete your own account!"));
   }
 
   try {
-    await User.findByIdAndDelete(req.params.id);
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    if (!deletedUser) {
+      return next(errorHandler(404, "User not found!"));
+    }
     res.clearCookie("access_token");
     res.status(200).json({
       success: true,
@@ -183,5 +193,3 @@ export const deleteUser = async (req, res, next) => {
     next(error);
   }
 };
-
-  
