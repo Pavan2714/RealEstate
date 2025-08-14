@@ -24,6 +24,8 @@ import {
 import { useState } from "react";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+
 const Contact = () => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -47,7 +49,7 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/api/contact", formData);
+      const res = await axios.post(`${API_URL}/api/contact`, formData);
       alert(res.data.message || "Message sent successfully!");
       setFormData({
         firstName: "",
