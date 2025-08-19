@@ -42,6 +42,7 @@ export default function OAuth() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           username: googleUserData.displayName,
           email: googleUserData.email,
