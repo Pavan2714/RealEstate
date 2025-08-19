@@ -49,7 +49,7 @@ export default function Signup() {
         : `${API_URL}/api/auth/signup/buyer`;
 
     try {
-      const res = await fetch(`${API_URL}/api/auth/signup`, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
