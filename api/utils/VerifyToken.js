@@ -1,22 +1,32 @@
 import jwt from "jsonwebtoken";
-import { errorHandler } from "./error.js";
 
 export const VerifyToken = (req, res, next) => {
-  // accept cookie or Authorization: Bearer <token>
-  const token =
-    req.cookies?.access_token ||
-    (req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer ") &&
-      req.headers.authorization.split(" ")[1]);
-
-  if (!token) return next(errorHandler(401, "Unauthorized"));
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    // Accept either Bearer header or cookie
+    const authHeader = req.headers.authorization || "";
+    const bearerToken = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+    const cookieToken = req.cookies?.access_token || null;
+    const token = bearerToken || cookieToken;
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized: token missing" });
+    }
+
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    // attach user info for downstream checks
+    req.user = { id: payload.id || payload._id, role: payload.role };
+
     return next();
   } catch (err) {
-    console.error("JWT verify error:", err);
-    return next(errorHandler(403, "Forbidden"));
+    return res
+      .status(401)
+      .json({
+        success: false,
+        message: "Unauthorized: token invalid or expired",
+      });
   }
 };

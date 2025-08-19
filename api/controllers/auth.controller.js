@@ -6,20 +6,29 @@ export const signup = async (req, res, next, role) => {
   const { username, email, password } = req.body;
 
   if (!username) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Username is required" });
+    return res.status(400).json({
+      success: false,
+      message: "Username is required",
+    });
   }
 
   const hashedPassword = bcrypt.hashSync(password, 10);
   const newuser = new User({ username, email, password: hashedPassword, role });
+
   try {
     await newuser.save();
+
     // Create JWT and set cookie
     const token = jwt.sign({ id: newuser._id }, process.env.JWT_SECRET);
     const { password: pass, ...rest } = newuser._doc;
+
     res
-      .cookie("access_token", token, { httpOnly: true })
+      .cookie("access_token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
       .status(201)
       .json(rest);
   } catch (error) {
@@ -35,6 +44,7 @@ export const signup = async (req, res, next, role) => {
     });
   }
 };
+
 // Buyer signup
 export const signupBuyer = (req, res, next) => signup(req, res, next, "buyer");
 // Seller signup
@@ -45,18 +55,27 @@ export const signin = async (req, res, next) => {
   try {
     const validUser = await User.findOne({ email });
     if (!validUser) return next(errorHandler(404, "User not found!"));
+
     const validPassword = bcrypt.compareSync(password, validUser.password);
     if (!validPassword) return next(errorHandler(401, "Wrong credentials!"));
+
     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
     const { password: pass, ...rest } = validUser._doc;
+
     res
-      .cookie("access_token", token, { httpOnly: true })
+      .cookie("access_token", token, {
+        httpOnly: true,
+        secure: true, // 🔑 important
+        sameSite: "none", // 🔑 important
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
       .status(200)
       .json(rest);
   } catch (error) {
     next(error);
   }
 };
+
 export const google = async (req, res, next) => {
   const { username, email, photo, role } = req.body;
   try {
