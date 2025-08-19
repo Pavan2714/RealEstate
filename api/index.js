@@ -12,15 +12,25 @@ import connectDB from "./config/db.js";
 
 dotenv.config(); // Load environment variables from .env file
 
-const app = express(); // Create an Express application instance
-const PORT = 3000;
+const app = express();
+const PORT = process.env.PORT || 3000;
+const FRONTEND_ORIGIN =
+  process.env.VITE_FRONTEND_URL || "http://localhost:3000";
+
+// If running behind a proxy (Vercel/Render) and you want secure cookies to work:
+app.set("trust proxy", 1);
 
 app.use(
   cors({
-    origin: process.env.VITE_FRONTEND_URL, // Use value from .env
+    origin: FRONTEND_ORIGIN,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// allow preflight for all routes
+app.options("*", cors({ origin: FRONTEND_ORIGIN, credentials: true }));
 
 // ✅ Connect to MongoDB
 await connectDB(); // Connect to MongoDB using the config function
@@ -43,7 +53,7 @@ app.use("/api/contact", contactRouter);
 
 // ✅ Global Error Handling Middleware
 app.use((err, req, res, next) => {
-  const statuscode = err.statuscode || 500; // Default to 500 if no custom status code
+  const statuscode = err.statuscode || err.statusCode || 500; // normalize
   const message = err.message || "Something went wrong"; // Default message
   console.error(err.stack); // Log error stack trace for debugging
   return res.status(statuscode).json({
@@ -56,4 +66,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-// Export the Express app for use in other files (e.g., server.js)
+
+export default app;
