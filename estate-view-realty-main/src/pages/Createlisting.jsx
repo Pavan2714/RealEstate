@@ -613,8 +613,9 @@ export default function CreateListing() {
       </div>
 
       {/* CSS Animations */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes fade-in-up {
           from {
             opacity: 0;
@@ -650,8 +651,9 @@ export default function CreateListing() {
         .animation-delay-2000 {
           animation-delay: 2s;
         }
-        `
-      }} />
+        `,
+        }}
+      />
     </div>
   );
 }
