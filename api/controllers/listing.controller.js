@@ -1,23 +1,37 @@
 import Listing from "../models/listing.model.js";
+import { errorHandler } from "../utils/error.js";
 
 export const createListing = async (req, res, next) => {
   try {
-    // Extract imageUrls from request body
-    const { imageUrls, ...otherData } = req.body;
+    // Verify user is authenticated (from middleware)
+    if (!req.user) {
+      return next(errorHandler(401, "Authentication required"));
+    }
+
+    // Extract data from request body
+    const { imageUrls, userRef, ...otherData } = req.body;
+
+    // Verify the userRef matches the authenticated user
+    if (userRef !== req.user.id) {
+      return next(errorHandler(403, "You can only create your own listings"));
+    }
 
     // Create listing with images stored as base64 strings in MongoDB
     const listing = await Listing.create({
       ...otherData,
-      imageUrls: imageUrls || [], // Store base64 image strings directly
+      imageUrls: imageUrls || [],
+      userRef: req.user.id, // Use authenticated user's ID
     });
 
-    console.log(
-      "Images stored in MongoDB:",
-      listing.imageUrls.length,
-      "images"
-    );
-    return res.status(201).json(listing);
+    console.log("Listing created successfully:", listing._id);
+    console.log("Images stored:", listing.imageUrls.length, "images");
+
+    return res.status(201).json({
+      success: true,
+      data: listing,
+    });
   } catch (error) {
+    console.error("Error creating listing:", error);
     next(error);
   }
 };
