@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 
 const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
   const navigate = useNavigate();
-  const [isFavorite, setIsFavorite] = useState(false);
 
   const handleCardClick = () => {
     navigate(`/property/${property._id}`);
@@ -19,7 +18,7 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
 
   const handleFavorite = (e) => {
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
+    onToggleFavorite(property._id);
   };
 
   // Helper to get the correct image src
