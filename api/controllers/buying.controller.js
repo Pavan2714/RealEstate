@@ -1,7 +1,4 @@
-// ...existing code...
 import Buying from "../models/buying.model.js";
-
-// ...existing code...
 
 export const createBuying = async (req, res, next) => {
   try {
@@ -33,12 +30,10 @@ export const createBuying = async (req, res, next) => {
       transactionType,
     });
     if (existing) {
-      return res
-        .status(409)
-        .json({
-          success: false,
-          message: "You already made an offer for this listing",
-        });
+      return res.status(409).json({
+        success: false,
+        message: "You already made an offer for this listing",
+      });
     }
 
     const buying = await Buying.create({
@@ -80,13 +75,11 @@ export const getAllBuyings = async (req, res) => {
     return res.status(200).json({ success: true, data: buyings });
   } catch (error) {
     console.error("getAllBuyings error:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching buyings",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching buyings",
+      error: error.message,
+    });
   }
 };
 
@@ -104,13 +97,10 @@ export const deleteBuying = async (req, res) => {
       .json({ success: true, message: "Buying offer deleted successfully" });
   } catch (error) {
     console.error("deleteBuying error:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error deleting buying offer",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting buying offer",
+      error: error.message,
+    });
   }
 };
-// ...existing code...
