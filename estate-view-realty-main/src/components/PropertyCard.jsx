@@ -4,7 +4,7 @@ import { Heart, MapPin, Bed, Bath, Square, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const PropertyCard = ({ property }) => {
+const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -14,7 +14,7 @@ const PropertyCard = ({ property }) => {
 
   const handleViewDetails = (e) => {
     e.stopPropagation();
-    navigate(`/property/${property._id}`);
+    navigate(property._id);
   };
 
   const handleFavorite = (e) => {

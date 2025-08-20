@@ -16,6 +16,23 @@ const Index = () => {
   const [filters, setFilters] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [favorites, setFavorites] = useState(() => {
+    const stored = localStorage.getItem("favorites");
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const handleToggleFavorite = (listingId) => {
+    setFavorites((prev) =>
+      prev.includes(listingId)
+        ? prev.filter((id) => id !== listingId)
+        : [...prev, listingId]
+    );
+  };
+
   useEffect(() => {
     fetch(`${API_URL}/api/listing`)
       .then((res) => res.json())
@@ -162,7 +179,11 @@ const Index = () => {
                             animationFillMode: "both",
                           }}
                         >
-                          <PropertyCard property={property} />
+                          <PropertyCard
+                            property={property}
+                            isFavorite={favorites.includes(property._id)}
+                            onToggleFavorite={handleToggleFavorite}
+                          />
                         </div>
                       ))
                     )}
