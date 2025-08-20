@@ -19,6 +19,7 @@ const Purchased = () => {
     if (!user) return;
     setLoading(true);
 
+    // Fetch both buying and rental offers
     Promise.all([
       fetch(`${API_URL}/api/buying?buyerId=${user._id}`).then((res) =>
         res.json()
@@ -28,8 +29,8 @@ const Purchased = () => {
       ),
     ])
       .then(([buyingData, rentalData]) => {
-        setBuyings(Array.isArray(buyingData.data) ? buyingData.data : []);
-        setRentals(Array.isArray(rentalData.data) ? rentalData.data : []);
+        setBuyings(buyingData || []);
+        setRentals(rentalData || []);
         setLoading(false);
       })
       .catch((error) => {

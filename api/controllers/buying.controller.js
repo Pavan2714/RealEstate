@@ -6,34 +6,17 @@ export const createBuying = async (req, res, next) => {
       req.body;
 
     if (!listingId || !buyerId || !offerPrice || !transactionType) {
-      return res
-        .status(400)
-        .json({ success: false, message: "All fields are required" });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Validate transactionType
     if (!["buy", "rent"].includes(transactionType)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid transaction type" });
+      return res.status(400).json({ message: "Invalid transaction type" });
     }
 
+    // If renting, ensure duration is provided
     if (transactionType === "rent" && !duration) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Duration is required for rent" });
-    }
-
-    // Optional: prevent duplicate offers for same listing by same buyer
-    const existing = await Buying.findOne({
-      listingId,
-      buyerId,
-      transactionType,
-    });
-    if (existing) {
-      return res.status(409).json({
-        success: false,
-        message: "You already made an offer for this listing",
-      });
+      return res.status(400).json({ message: "Duration is required for rent" });
     }
 
     const buying = await Buying.create({
@@ -43,27 +26,22 @@ export const createBuying = async (req, res, next) => {
       transactionType,
       duration: transactionType === "rent" ? duration : null,
     });
-
-    return res.status(201).json({
-      success: true,
+    res.status(201).json({
       message: `${transactionType} transaction created successfully`,
-      data: buying,
+      Buying,
     });
   } catch (error) {
-    console.error("createBuying error:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error", error: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 export const getAllBuyings = async (req, res) => {
   try {
-    const { buyerId, transactionType } = req.query;
+    const { buyerId, transactionType } = req.query; //buyerId
     const filter = {};
     if (buyerId) filter.buyerId = buyerId;
     if (transactionType) filter.transactionType = transactionType;
-
     const buyings = await Buying.find(filter)
       .populate({
         path: "listingId",
@@ -71,36 +49,20 @@ export const getAllBuyings = async (req, res) => {
           "name description imageUrls regularPrice status type address bedrooms bathrooms parking furnished offer discountPrice",
       })
       .populate("buyerId", "username email");
-
-    return res.status(200).json({ success: true, data: buyings });
+    res.status(200).json(buyings);
   } catch (error) {
-    console.error("getAllBuyings error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error fetching buyings",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Error fetching buyings", error });
   }
 };
-
 export const deleteBuying = async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Buying.findByIdAndDelete(id);
     if (!deleted) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Buying offer not found" });
+      return res.status(404).json({ message: "Buying offer not found" });
     }
-    return res
-      .status(200)
-      .json({ success: true, message: "Buying offer deleted successfully" });
+    res.status(200).json({ message: "Buying offer deleted successfully" });
   } catch (error) {
-    console.error("deleteBuying error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error deleting buying offer",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Error deleting buying offer", error });
   }
 };
