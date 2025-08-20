@@ -45,7 +45,147 @@ export default function CreateListing() {
     discountPrice: 0,
   });
 
-  // ... existing functions (handleImageSubmit, storeImage, handleRemoveImage, handleChange, handleSubmit) ...
+  console.log(formData);
+
+  // Image upload function
+  const handleImageSubmit = () => {
+    if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
+      setUploading(true);
+      setImageUploadError(false);
+      const promises = [];
+
+      for (let i = 0; i < files.length; i++) {
+        promises.push(storeImage(files[i]));
+      }
+
+      Promise.all(promises)
+        .then((urls) => {
+          setFormData({
+            ...formData,
+            imageUrls: formData.imageUrls.concat(urls),
+          });
+          setImageUploadError(false);
+          setUploading(false);
+        })
+        .catch((err) => {
+          setImageUploadError("Image upload failed (2 mb max per image)", err);
+          setUploading(false);
+        });
+    } else {
+      setImageUploadError("You can only upload 6 images per listing");
+      setUploading(false);
+    }
+  };
+
+  // Convert image to base64 for MongoDB storage
+  const storeImage = async (file) => {
+    return new Promise((resolve, reject) => {
+      if (file.size > 2 * 1024 * 1024) {
+        reject(new Error("File size must be less than 2MB"));
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result;
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Remove image function
+  const handleRemoveImage = (index) => {
+    setFormData({
+      ...formData,
+      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
+    });
+  };
+
+  // Handle form changes
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    if (name === "sell" || name === "rent") {
+      setFormData((prev) => ({
+        ...prev,
+        sell: name === "sell" ? checked : false,
+        rent: name === "rent" ? checked : false,
+        type: checked ? (name === "sell" ? "sale" : "rent") : "",
+        status: checked ? (name === "sell" ? "sell" : "rent") : "",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
+  };
+
+  // Submit form to create listing in MongoDB
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Check if user is authenticated
+    if (!user) {
+      setError("Please sign in to create a listing");
+      navigate("/signin");
+      return;
+    }
+
+    try {
+      if (formData.imageUrls.length < 1)
+        return setError("You must upload at least one image");
+      if (+formData.regularPrice < +formData.discountPrice)
+        return setError("Discount price must be lower than regular price");
+
+      setLoading(true);
+      setError(false);
+
+      // Prepare data with correct field names for backend
+      const listingData = {
+        name: formData.name,
+        description: formData.description,
+        address: formData.address,
+        type: formData.type,
+        status: formData.status,
+        parking: formData.parking,
+        furnished: formData.furnished,
+        offer: formData.offer,
+        bedrooms: formData.bedrooms,
+        bathrooms: formData.bathrooms,
+        regularPrice: formData.regularPrice,
+        discountPrice: formData.discountPrice,
+        imageUrls: formData.imageUrls,
+        userRef: user._id,
+      };
+
+      console.log("Sending listing data:", listingData);
+
+      const res = await fetch(`${API_URL}/api/listing/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(listingData),
+      });
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (data.success === false) {
+        setError(data.message);
+      } else {
+        navigate("/");
+        alert("Listing created successfully!");
+      }
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f0f9ff] via-white to-[#e0f2fe] py-8 px-4">
