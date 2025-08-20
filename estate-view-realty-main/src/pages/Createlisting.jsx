@@ -22,9 +22,9 @@ export default function CreateListing() {
   const navigate = useNavigate();
 
   const [files, setFiles] = useState([]);
-  const [imageUploadError, setImageUploadError] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -45,38 +45,6 @@ export default function CreateListing() {
     discountPrice: 0,
   });
 
-  console.log(formData);
-
-  // Image upload function
-  const handleImageSubmit = () => {
-    if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
-      setUploading(true);
-      setImageUploadError(false);
-      const promises = [];
-
-      for (let i = 0; i < files.length; i++) {
-        promises.push(storeImage(files[i]));
-      }
-
-      Promise.all(promises)
-        .then((urls) => {
-          setFormData({
-            ...formData,
-            imageUrls: formData.imageUrls.concat(urls),
-          });
-          setImageUploadError(false);
-          setUploading(false);
-        })
-        .catch((err) => {
-          setImageUploadError("Image upload failed (2 mb max per image)", err);
-          setUploading(false);
-        });
-    } else {
-      setImageUploadError("You can only upload 6 images per listing");
-      setUploading(false);
-    }
-  };
-
   // Convert image to base64 for MongoDB storage
   const storeImage = async (file) => {
     return new Promise((resolve, reject) => {
@@ -95,12 +63,42 @@ export default function CreateListing() {
     });
   };
 
+  // Image upload function
+  const handleImageSubmit = () => {
+    if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
+      setUploading(true);
+      setImageUploadError("");
+      const promises = [];
+
+      for (let i = 0; i < files.length; i++) {
+        promises.push(storeImage(files[i]));
+      }
+
+      Promise.all(promises)
+        .then((urls) => {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            imageUrls: prevFormData.imageUrls.concat(urls),
+          }));
+          setImageUploadError("");
+          setUploading(false);
+        })
+        .catch((err) => {
+          setImageUploadError("Image upload failed (2 mb max per image)");
+          setUploading(false);
+        });
+    } else {
+      setImageUploadError("You can only upload 6 images per listing");
+      setUploading(false);
+    }
+  };
+
   // Remove image function
   const handleRemoveImage = (index) => {
-    setFormData({
-      ...formData,
-      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
-    });
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      imageUrls: prevFormData.imageUrls.filter((_, i) => i !== index),
+    }));
   };
 
   // Handle form changes
@@ -135,13 +133,17 @@ export default function CreateListing() {
     }
 
     try {
-      if (formData.imageUrls.length < 1)
-        return setError("You must upload at least one image");
-      if (+formData.regularPrice < +formData.discountPrice)
-        return setError("Discount price must be lower than regular price");
+      if (formData.imageUrls.length < 1) {
+        setError("You must upload at least one image");
+        return;
+      }
+      if (+formData.regularPrice < +formData.discountPrice) {
+        setError("Discount price must be lower than regular price");
+        return;
+      }
 
       setLoading(true);
-      setError(false);
+      setError("");
 
       // Prepare data with correct field names for backend
       const listingData = {
@@ -160,8 +162,6 @@ export default function CreateListing() {
         imageUrls: formData.imageUrls,
         userRef: user._id,
       };
-
-      console.log("Sending listing data:", listingData);
 
       const res = await fetch(`${API_URL}/api/listing/create`, {
         method: "POST",
@@ -613,7 +613,8 @@ export default function CreateListing() {
       </div>
 
       {/* CSS Animations */}
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes fade-in-up {
           from {
             opacity: 0;
@@ -649,7 +650,8 @@ export default function CreateListing() {
         .animation-delay-2000 {
           animation-delay: 2s;
         }
-      `}</style>
+        `
+      }} />
     </div>
   );
 }
