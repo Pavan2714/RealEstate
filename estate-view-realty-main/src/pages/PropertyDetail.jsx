@@ -39,8 +39,6 @@ const PropertyDetail = () => {
         setLoading(true);
         setError(null);
 
-        console.log("Fetching property with ID:", id);
-
         const response = await fetch(`${API_URL}/api/listing/${id}`);
 
         if (!response.ok) {
@@ -215,28 +213,25 @@ const PropertyDetail = () => {
 
         <main className="container mx-auto px-4 py-8">
           {/* Back Button */}
-          <div className="animate-fade-in-up mb-6">
-            <Button
-              onClick={() => navigate(-1)}
-              variant="outline"
-              className="border-[#2eb6f5]/30 text-[#2eb6f5] hover:bg-[#2eb6f5] hover:text-white transition-all duration-300 hover:scale-105"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Properties
-            </Button>
-          </div>
+          <Button
+            onClick={() => navigate(-1)}
+            variant="outline"
+            className="mb-6 border-[#2eb6f5]/30 text-[#2eb6f5] hover:bg-[#2eb6f5] hover:text-white transition-all duration-300"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Image Gallery */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Main Image */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-[#2eb6f5]/20 animate-fade-in-up hover:shadow-2xl transition-all duration-500">
-                <div className="relative mb-6 group">
+            <div className="lg:col-span-2">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#2eb6f5]/20 animate-fade-in-up">
+                <div className="relative mb-4">
                   {currentImageSrc ? (
                     <img
                       src={currentImageSrc}
                       alt={property.name || "Property Image"}
-                      className="w-full h-80 sm:h-96 object-cover rounded-2xl transition-transform duration-500 group-hover:scale-[1.02]"
+                      className="w-full h-96 object-cover rounded-xl"
                       onError={() =>
                         handleImageError(
                           property.imageUrls?.[currentImageIndex],
@@ -245,90 +240,75 @@ const PropertyDetail = () => {
                       }
                     />
                   ) : (
-                    <ImagePlaceholder className="w-full h-80 sm:h-96 rounded-2xl" />
+                    <ImagePlaceholder className="w-full h-96 rounded-xl" />
                   )}
 
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
                   {/* Action Buttons Overlay */}
-                  <div className="absolute top-4 right-4 flex gap-3">
+                  <div className="absolute top-4 right-4 flex gap-2">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-500 hover:bg-red-50 border-0 shadow-lg transition-all duration-300 hover:scale-110"
+                      className="bg-white/80 backdrop-blur-sm text-gray-600 hover:text-red-500"
                     >
                       <Heart className="h-4 w-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="bg-white/90 backdrop-blur-sm text-gray-600 hover:text-[#2eb6f5] hover:bg-[#2eb6f5]/10 border-0 shadow-lg transition-all duration-300 hover:scale-110"
+                      className="bg-white/80 backdrop-blur-sm text-gray-600 hover:text-[#2eb6f5]"
                     >
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>
 
                   {/* Property Badges */}
-                  <div className="absolute top-4 left-4 flex flex-col gap-3">
+                  <div className="absolute top-4 left-4 flex flex-col gap-2">
                     {property.status && (
                       <Badge
-                        className={`px-3 py-1.5 font-bold shadow-lg backdrop-blur-sm ${
+                        className={`${
                           property.status === "sell"
-                            ? "bg-green-600/90 hover:bg-green-700"
-                            : "bg-blue-600/90 hover:bg-blue-700"
-                        } text-white transition-all duration-300 hover:scale-105`}
+                            ? "bg-green-600"
+                            : "bg-blue-600"
+                        } text-white font-bold`}
                       >
                         For {property.status === "sell" ? "Sale" : "Rent"}
                       </Badge>
                     )}
 
                     {property.offer && discountAmount > 0 && (
-                      <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold shadow-lg animate-pulse px-3 py-1.5 hover:scale-105 transition-transform">
-                        🔥 Special Offer
+                      <Badge className="bg-red-500 text-white font-bold animate-pulse">
+                        Special Offer
                       </Badge>
                     )}
 
                     {property.type && (
-                      <Badge className="bg-[#2eb6f5]/90 backdrop-blur-sm text-white font-bold capitalize shadow-lg px-3 py-1.5 hover:bg-[#1e90ff] hover:scale-105 transition-all duration-300">
+                      <Badge className="bg-[#2eb6f5] text-white font-bold capitalize">
                         {property.type}
                       </Badge>
                     )}
                   </div>
 
                   {/* Property Price Badge */}
-                  <div className="absolute bottom-4 left-4 bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] text-white px-6 py-3 rounded-2xl font-bold shadow-xl backdrop-blur-sm hover:scale-105 transition-transform duration-300">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-5 w-5" />
-                      <span className="text-lg">
-                        ₹{property.regularPrice?.toLocaleString() || "N/A"}
-                        {property.status === "rent" && (
-                          <span className="text-sm font-normal ml-1 opacity-90">/month</span>
-                        )}
-                      </span>
-                    </div>
+                  <div className="absolute bottom-4 left-4 bg-[#2eb6f5] text-white px-4 py-2 rounded-full font-bold shadow-lg">
+                    ₹{property.regularPrice?.toLocaleString() || "N/A"}
+                    {property.status === "rent" && (
+                      <span className="text-xs font-normal ml-1">/month</span>
+                    )}
                   </div>
-
-                  {/* Image Counter */}
-                  {property.imageUrls && property.imageUrls.length > 1 && (
-                    <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl text-sm font-medium">
-                      {currentImageIndex + 1} / {property.imageUrls.length}
-                    </div>
-                  )}
                 </div>
 
                 {/* Image Thumbnails */}
                 {property.imageUrls && property.imageUrls.length > 1 && (
-                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                  <div className="grid grid-cols-4 gap-2">
                     {property.imageUrls.map((url, index) => {
                       const thumbnailSrc = getImageSrc(url, index);
                       return (
                         <div
                           key={index}
-                          className={`relative h-16 sm:h-20 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden group ${
+                          className={`h-20 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 ${
                             currentImageIndex === index
-                              ? "ring-3 ring-[#2eb6f5] shadow-lg scale-105"
-                              : "hover:opacity-80 hover:scale-105 hover:shadow-md"
+                              ? "ring-2 ring-[#2eb6f5] scale-105"
+                              : "hover:opacity-80"
                           }`}
                           onClick={() => setCurrentImageIndex(index)}
                         >
@@ -336,18 +316,11 @@ const PropertyDetail = () => {
                             <img
                               src={thumbnailSrc}
                               alt={`${property.name} ${index + 1}`}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                              className="w-full h-full object-cover rounded-lg"
                               onError={() => handleImageError(url, index)}
                             />
                           ) : (
-                            <ImagePlaceholder className="w-full h-full bg-gray-100" />
-                          )}
-                          
-                          {/* Overlay for current image */}
-                          {currentImageIndex === index && (
-                            <div className="absolute inset-0 bg-[#2eb6f5]/20 flex items-center justify-center">
-                              <Eye className="h-4 w-4 text-white" />
-                            </div>
+                            <ImagePlaceholder className="w-full h-full rounded-lg" />
                           )}
                         </div>
                       );
@@ -356,144 +329,106 @@ const PropertyDetail = () => {
                 )}
               </div>
 
-              {/* Property Details Card */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-[#2eb6f5]/20 animate-fade-in-up animation-delay-200 hover:shadow-2xl transition-all duration-500">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] rounded-2xl flex items-center justify-center">
-                    <Home className="h-6 w-6 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Property Details
-                  </h2>
-                </div>
+              {/* Property Details */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#2eb6f5]/20 mt-6 animate-fade-in-up animation-delay-200">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Property Details
+                </h2>
 
-                {/* Key Features Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  <div className="group p-4 bg-gradient-to-r from-[#2eb6f5]/5 to-[#1e90ff]/5 rounded-2xl border border-[#2eb6f5]/10 hover:border-[#2eb6f5]/30 transition-all duration-300 hover:scale-105">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#2eb6f5]/10 rounded-xl flex items-center justify-center group-hover:bg-[#2eb6f5]/20 transition-colors">
-                        <Bed className="h-5 w-5 text-[#2eb6f5]" />
-                      </div>
-                      <div>
-                        <span className="text-lg font-bold text-gray-900">
-                          {property.bedrooms || "N/A"}
-                        </span>
-                        <p className="text-xs text-gray-600 font-medium">Bedrooms</p>
-                      </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="flex items-center gap-2 p-3 bg-[#2eb6f5]/5 rounded-lg">
+                    <Bed className="h-5 w-5 text-[#2eb6f5]" />
+                    <div>
+                      <span className="font-medium text-gray-900">
+                        {property.bedrooms || "N/A"}
+                      </span>
+                      <p className="text-xs text-gray-600">Bedrooms</p>
                     </div>
                   </div>
 
-                  <div className="group p-4 bg-gradient-to-r from-[#2eb6f5]/5 to-[#1e90ff]/5 rounded-2xl border border-[#2eb6f5]/10 hover:border-[#2eb6f5]/30 transition-all duration-300 hover:scale-105">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#2eb6f5]/10 rounded-xl flex items-center justify-center group-hover:bg-[#2eb6f5]/20 transition-colors">
-                        <Bath className="h-5 w-5 text-[#2eb6f5]" />
-                      </div>
-                      <div>
-                        <span className="text-lg font-bold text-gray-900">
-                          {property.bathrooms || "N/A"}
-                        </span>
-                        <p className="text-xs text-gray-600 font-medium">Bathrooms</p>
-                      </div>
+                  <div className="flex items-center gap-2 p-3 bg-[#2eb6f5]/5 rounded-lg">
+                    <Bath className="h-5 w-5 text-[#2eb6f5]" />
+                    <div>
+                      <span className="font-medium text-gray-900">
+                        {property.bathrooms || "N/A"}
+                      </span>
+                      <p className="text-xs text-gray-600">Bathrooms</p>
                     </div>
                   </div>
 
-                  <div className="group p-4 bg-gradient-to-r from-[#2eb6f5]/5 to-[#1e90ff]/5 rounded-2xl border border-[#2eb6f5]/10 hover:border-[#2eb6f5]/30 transition-all duration-300 hover:scale-105">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#2eb6f5]/10 rounded-xl flex items-center justify-center group-hover:bg-[#2eb6f5]/20 transition-colors">
-                        <Car className="h-5 w-5 text-[#2eb6f5]" />
-                      </div>
-                      <div>
-                        <span className="text-lg font-bold text-gray-900">
-                          {property.parking ? "Yes" : "No"}
-                        </span>
-                        <p className="text-xs text-gray-600 font-medium">Parking</p>
-                      </div>
+                  <div className="flex items-center gap-2 p-3 bg-[#2eb6f5]/5 rounded-lg">
+                    <Car className="h-5 w-5 text-[#2eb6f5]" />
+                    <div>
+                      <span className="font-medium text-gray-900">
+                        {property.parking ? "Yes" : "No"}
+                      </span>
+                      <p className="text-xs text-gray-600">Parking</p>
                     </div>
                   </div>
 
-                  <div className="group p-4 bg-gradient-to-r from-[#2eb6f5]/5 to-[#1e90ff]/5 rounded-2xl border border-[#2eb6f5]/10 hover:border-[#2eb6f5]/30 transition-all duration-300 hover:scale-105">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#2eb6f5]/10 rounded-xl flex items-center justify-center group-hover:bg-[#2eb6f5]/20 transition-colors">
-                        <Home className="h-5 w-5 text-[#2eb6f5]" />
-                      </div>
-                      <div>
-                        <span className="text-lg font-bold text-gray-900">
-                          {property.furnished ? "Yes" : "No"}
-                        </span>
-                        <p className="text-xs text-gray-600 font-medium">Furnished</p>
-                      </div>
+                  <div className="flex items-center gap-2 p-3 bg-[#2eb6f5]/5 rounded-lg">
+                    <Home className="h-5 w-5 text-[#2eb6f5]" />
+                    <div>
+                      <span className="font-medium text-gray-900">
+                        {property.furnished ? "Yes" : "No"}
+                      </span>
+                      <p className="text-xs text-gray-600">Furnished</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Description Section */}
-                <div className="mb-8">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <div className="w-6 h-6 bg-[#2eb6f5]/20 rounded-lg flex items-center justify-center">
-                      <span className="w-2 h-2 bg-[#2eb6f5] rounded-full"></span>
-                    </div>
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     Description
                   </h3>
-                  <div className="prose prose-gray max-w-none">
-                    <p className="text-gray-700 leading-relaxed text-lg">
-                      {property.description || "No description available."}
-                    </p>
-                  </div>
+                  <p className="text-gray-600 leading-relaxed">
+                    {property.description || "No description available."}
+                  </p>
                 </div>
 
                 {/* Property Features */}
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <div className="w-6 h-6 bg-[#2eb6f5]/20 rounded-lg flex items-center justify-center">
-                      <span className="w-2 h-2 bg-[#2eb6f5] rounded-full"></span>
-                    </div>
-                    Features & Amenities
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Features
                   </h3>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2">
                     {property.furnished && (
                       <Badge
                         variant="outline"
-                        className="border-[#2eb6f5]/30 text-[#2eb6f5] bg-[#2eb6f5]/5 hover:bg-[#2eb6f5]/10 px-4 py-2 font-medium transition-all duration-300 hover:scale-105"
+                        className="border-[#2eb6f5]/30 text-[#2eb6f5]"
                       >
-                        ✨ Furnished
+                        Furnished
                       </Badge>
                     )}
                     {property.parking && (
                       <Badge
                         variant="outline"
-                        className="border-[#2eb6f5]/30 text-[#2eb6f5] bg-[#2eb6f5]/5 hover:bg-[#2eb6f5]/10 px-4 py-2 font-medium transition-all duration-300 hover:scale-105"
+                        className="border-[#2eb6f5]/30 text-[#2eb6f5]"
                       >
-                        🚗 Parking Available
+                        Parking Available
                       </Badge>
                     )}
                     <Badge
                       variant="outline"
-                      className="border-[#2eb6f5]/30 text-[#2eb6f5] bg-[#2eb6f5]/5 hover:bg-[#2eb6f5]/10 px-4 py-2 font-medium transition-all duration-300 hover:scale-105"
+                      className="border-[#2eb6f5]/30 text-[#2eb6f5]"
                     >
-                      🏠 {property.bedrooms || 0} Bed / {property.bathrooms || 0} Bath
+                      {property.bedrooms || 0} Bed / {property.bathrooms || 0}{" "}
+                      Bath
                     </Badge>
                     {property.type && (
                       <Badge
                         variant="outline"
-                        className="border-[#2eb6f5]/30 text-[#2eb6f5] bg-[#2eb6f5]/5 hover:bg-[#2eb6f5]/10 px-4 py-2 font-medium capitalize transition-all duration-300 hover:scale-105"
+                        className="border-[#2eb6f5]/30 text-[#2eb6f5] capitalize"
                       >
-                        🏘️ {property.type}
+                        {property.type}
                       </Badge>
                     )}
                     {property.status && (
                       <Badge
                         variant="outline"
-                        className="border-[#2eb6f5]/30 text-[#2eb6f5] bg-[#2eb6f5]/5 hover:bg-[#2eb6f5]/10 px-4 py-2 font-medium capitalize transition-all duration-300 hover:scale-105"
+                        className="border-[#2eb6f5]/30 text-[#2eb6f5] capitalize"
                       >
-                        📋 For {property.status}
-                      </Badge>
-                    )}
-                    {property.offer && (
-                      <Badge
-                        variant="outline"
-                        className="border-red-300 text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 font-medium transition-all duration-300 hover:scale-105"
-                      >
-                        🔥 Special Offer
+                        For {property.status}
                       </Badge>
                     )}
                   </div>
@@ -503,130 +438,86 @@ const PropertyDetail = () => {
 
             {/* Property Info Sidebar */}
             <div className="lg:col-span-1">
-              <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-[#2eb6f5]/20 animate-fade-in-up animation-delay-400 sticky top-4 hover:shadow-2xl transition-all duration-500">
-                {/* Property Title */}
-                <div className="mb-6">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4 leading-tight">
-                    {property.name || "Property Name"}
-                  </h1>
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#2eb6f5]/20 animate-fade-in-up animation-delay-400 sticky top-4">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  {property.name || "Property Name"}
+                </h1>
 
-                  <div className="flex items-start gap-2 text-gray-600 bg-gray-50 p-3 rounded-xl">
-                    <MapPin className="h-5 w-5 mt-0.5 text-[#2eb6f5] flex-shrink-0" />
-                    <span className="text-sm font-medium leading-relaxed">
-                      {property.address || "Address not available"}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-1 text-gray-600 mb-6">
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-sm">
+                    {property.address || "Address not available"}
+                  </span>
                 </div>
 
                 {/* Price Section */}
-                <div className="mb-8 p-6 bg-gradient-to-r from-[#2eb6f5]/10 via-[#1e90ff]/10 to-[#2eb6f5]/10 rounded-2xl border border-[#2eb6f5]/20">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] rounded-xl flex items-center justify-center">
-                      <DollarSign className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 font-medium">Property Price</p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-gray-900">
-                          ₹{property.regularPrice?.toLocaleString() || "N/A"}
-                        </span>
-                        {property.status === "rent" && (
-                          <span className="text-lg text-gray-600 font-medium">/month</span>
-                        )}
-                      </div>
-                    </div>
+                <div className="mb-6 p-4 bg-gradient-to-r from-[#2eb6f5]/5 to-[#1e90ff]/5 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign className="h-5 w-5 text-[#2eb6f5]" />
+                    <span className="text-3xl font-bold text-gray-900">
+                      ₹{property.regularPrice?.toLocaleString() || "N/A"}
+                      {property.status === "rent" && (
+                        <span className="text-lg text-gray-600">/month</span>
+                      )}
+                    </span>
                   </div>
 
                   {property.offer && discountAmount > 0 && (
-                    <div className="mt-4 p-3 bg-green-50 rounded-xl border border-green-200">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Shield className="h-4 w-4 text-green-600" />
-                        <span className="text-green-800 font-semibold text-sm">Special Discount</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500 text-sm line-through">
+                    <div className="space-y-1">
+                      <div className="text-sm text-gray-500">
+                        <span className="line-through">
                           ₹{property.discountPrice?.toLocaleString()}
                         </span>
-                        <span className="text-green-600 font-bold">
-                          Save ₹{discountAmount.toLocaleString()}!
-                        </span>
+                      </div>
+                      <div className="text-green-600 font-medium">
+                        <Shield className="h-4 w-4 inline mr-1" />
+                        Save ₹{discountAmount.toLocaleString()}!
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Action Buttons */}
-                <div className="space-y-4 mb-8">
-                  <Button className="w-full bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] hover:from-[#1e90ff] hover:to-[#2eb6f5] text-white font-semibold py-4 transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-xl">
-                    <Phone className="h-5 w-5 mr-3" />
-                    Contact Agent Now
+                <div className="space-y-3 mb-6">
+                  <Button className="w-full bg-[#2eb6f5] hover:bg-[#1e90ff] text-white transition-all duration-300 hover:scale-105">
+                    <Phone className="h-4 w-4 mr-2" />
+                    Contact Agent
                   </Button>
-                  
                   <Button
                     variant="outline"
-                    className="w-full border-2 border-[#2eb6f5]/30 text-[#2eb6f5] hover:bg-[#2eb6f5] hover:text-white font-semibold py-4 transition-all duration-300 hover:scale-105"
+                    className="w-full border-[#2eb6f5]/30 text-[#2eb6f5] hover:bg-[#2eb6f5] hover:text-white transition-all duration-300"
                   >
-                    <Mail className="h-5 w-5 mr-3" />
+                    <Mail className="h-4 w-4 mr-2" />
                     Send Message
                   </Button>
-                  
                   <Button
                     variant="outline"
-                    className="w-full border-2 border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 font-semibold py-4 transition-all duration-300 hover:scale-105"
+                    className="w-full border-[#2eb6f5]/30 text-[#2eb6f5] hover:bg-[#2eb6f5] hover:text-white transition-all duration-300"
                   >
-                    <Eye className="h-5 w-5 mr-3" />
+                    <Eye className="h-4 w-4 mr-2" />
                     Schedule Viewing
                   </Button>
                 </div>
 
-                {/* Property Meta Info */}
-                <div className="border-t border-gray-200 pt-6 space-y-4">
-                  <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-5 w-5 text-[#2eb6f5]" />
-                      <span className="font-medium text-gray-700">Listed Date</span>
-                    </div>
-                    <span className="text-gray-600 font-medium">
+                {/* Property Info */}
+                <div className="border-t pt-4 space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="h-4 w-4" />
+                    <span>
+                      Listed on{" "}
                       {property.createdAt
-                        ? new Date(property.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric"
-                          })
+                        ? new Date(property.createdAt).toLocaleDateString()
                         : "N/A"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <Home className="h-5 w-5 text-[#2eb6f5]" />
-                      <span className="font-medium text-gray-700">Property ID</span>
-                    </div>
-                    <span className="text-gray-600 font-mono text-sm">
-                      #{property._id?.slice(-8).toUpperCase() || "N/A"}
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Home className="h-4 w-4" />
+                    <span>
+                      Property ID:{" "}
+                      {property._id?.slice(-8).toUpperCase() || "N/A"}
                     </span>
                   </div>
-
-                  <div className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <Eye className="h-5 w-5 text-[#2eb6f5]" />
-                      <span className="font-medium text-gray-700">Property Type</span>
-                    </div>
-                    <span className="text-gray-600 font-medium capitalize">
-                      {property.type || "N/A"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Trust Indicators */}
-                <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Shield className="h-5 w-5 text-blue-600" />
-                    <span className="font-semibold text-blue-800">Verified Property</span>
-                  </div>
-                  <p className="text-blue-700 text-sm">
-                    This property has been verified by our team for authenticity and accuracy.
-                  </p>
                 </div>
               </div>
             </div>
