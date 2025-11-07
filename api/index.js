@@ -19,7 +19,7 @@ app.use(
   cors({
     origin: [
       "https://real-estate-frontend-zeta-blond.vercel.app",
-      "https://real-estate-backend-umber.vercel.app",
+      "https://real-estate-backend-alpha-seven.vercel.app",
     ],
     credentials: true,
   })
