@@ -207,14 +207,14 @@ export default function Profile() {
         if (data.success && data.data) {
           dispatch(signInSuccess(data.data));
           setUpdateSuccess(true);
-          setTimeout(() => {
-            setUpdateSuccess(false);
-          }, 3000);
+          setTimeout(() => navigate("/"), 3000);
         } else if (data._id) {
           // Alternative format: backend returns user directly
           dispatch(signInSuccess(data));
           setUpdateSuccess(true);
-          setTimeout(() => navigate("/"), 3000);
+          setTimeout(() => {
+            setUpdateSuccess(false);
+          }, 3000);
         } else {
           setUpdateError("Update failed. Please try again.");
         }
