@@ -10,6 +10,7 @@ import {
   Shield,
 } from "lucide-react";
 import OAuth from "../components/OAuth";
+import OAuthSignUp from "../components/OAuthSignUp";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -323,7 +324,7 @@ export default function Signup() {
                 </div>
               </div>
 
-              <OAuth />
+              <OAuthSignUp />
             </form>
 
             {/* Sign In Link */}
