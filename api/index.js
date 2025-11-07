@@ -23,21 +23,33 @@ const PORT = process.env.PORT || 3000;
 */
 const whitelist = [
   process.env.VITE_FRONTEND_URL,
+  process.env.FRONTEND_URL,
   process.env.CLIENT_URL,
+  // Add your production frontend URL as fallback
+  "https://real-estate-frontend-zeta-blond.vercel.app",
   process.env.DEV_ORIGIN || "http://localhost:8081",
 ].filter(Boolean);
 
 const corsOptions = {
   origin: (origin, callback) => {
     // allow non-browser requests like curl or server-to-server (no origin)
-    if (!origin) return callback(null, true);
-
-    // allow localhost in non-production
-    if (process.env.NODE_ENV !== "production" && origin.includes("localhost")) {
+    if (!origin) {
+      console.log("CORS: allowing request with no origin (server-to-server)");
       return callback(null, true);
     }
 
-    if (whitelist.includes(origin)) return callback(null, true);
+    // allow localhost in non-production
+    if (process.env.NODE_ENV !== "production" && origin.includes("localhost")) {
+      console.log("CORS: allowing localhost origin:", origin);
+      return callback(null, true);
+    }
+
+    if (whitelist.includes(origin)) {
+      console.log("CORS: allowing whitelisted origin:", origin);
+      return callback(null, true);
+    }
+
+    console.warn("CORS: rejecting origin:", origin, "| Whitelist:", whitelist);
     return callback(new Error("CORS policy: Origin not allowed"), false);
   },
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
