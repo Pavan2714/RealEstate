@@ -10,6 +10,7 @@ import {
   Info,
   Mail,
   User,
+  CheckCircle,
 } from "lucide-react";
 
 export default function Header() {
@@ -99,6 +100,17 @@ export default function Header() {
                 <Heart className="h-6 w-6 text-gray-700 group-hover:text-[#2eb6f5] group-hover:scale-110 transition-all duration-300" />
               </Link>
 
+              {/* Purchased Button - Only for Buyers */}
+              {user && user.role === "buyer" && (
+                <Link
+                  to="/purchased"
+                  className="px-4 py-2.5 bg-white border-2 border-[#2eb6f5] text-[#2eb6f5] rounded-xl hover:bg-[#2eb6f5] hover:text-white hover:shadow-lg transition-all duration-300 font-medium flex items-center space-x-2"
+                >
+                  <CheckCircle className="h-5 w-5" />
+                  <span>Purchased</span>
+                </Link>
+              )}
+
               {user ? (
                 <Link
                   to="/profile"
@@ -183,6 +195,9 @@ export default function Header() {
                     {user.username}
                   </p>
                   <p className="text-sm text-gray-500">{user.email}</p>
+                  <p className="text-xs text-[#2eb6f5] font-medium capitalize mt-1">
+                    {user.role}
+                  </p>
                 </div>
               </div>
             </div>
@@ -250,6 +265,19 @@ export default function Header() {
                   Favorites
                 </span>
               </button>
+
+              {/* Purchased - Only for Buyers (Mobile) */}
+              {user && user.role === "buyer" && (
+                <button
+                  onClick={() => handleNavigation("/purchased")}
+                  className="flex items-center space-x-3 w-full px-4 py-3 rounded-xl hover:bg-[#2eb6f5]/10 transition-all duration-300 group"
+                >
+                  <CheckCircle className="h-5 w-5 text-gray-600 group-hover:text-[#2eb6f5] transition-colors" />
+                  <span className="font-medium text-gray-700 group-hover:text-[#2eb6f5] transition-colors">
+                    Purchased
+                  </span>
+                </button>
+              )}
 
               {user && (
                 <button
