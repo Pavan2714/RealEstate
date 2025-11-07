@@ -8,6 +8,7 @@ import PropertyCard from "@/components/PropertyCard";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import Footer from "@/components/Footer";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -17,6 +18,7 @@ const Buy = () => {
   const [userBuyings, setUserBuyings] = useState([]);
   const [loading, setLoading] = useState(true);
   const user = useSelector((state) => state.user.user);
+  const navigate = useNavigate();
 
   // Fetch properties for sale
   useEffect(() => {
@@ -100,7 +102,10 @@ const Buy = () => {
           <p className="text-gray-600 mb-6">
             Please sign in to view available properties for buying.
           </p>
-          <Button className="bg-[#2eb6f5] hover:bg-[#1e90ff] text-white">
+          <Button
+            onClick={() => navigate("/signin")}
+            className="bg-[#2eb6f5] hover:bg-[#1e90ff] text-white"
+          >
             Sign In
           </Button>
         </div>

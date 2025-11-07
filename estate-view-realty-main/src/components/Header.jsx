@@ -41,12 +41,6 @@ export default function Header() {
               className="flex items-center space-x-2 group"
               onClick={closeMobileMenu}
             >
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] rounded-xl blur-sm group-hover:blur-md transition-all duration-300"></div>
-                <div className="relative bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] p-2.5 rounded-xl transform group-hover:scale-110 transition-all duration-300">
-                  <Home className="h-6 w-6 text-white" />
-                </div>
-              </div>
               <div className="flex items-center gap-1">
                 <span className="text-2xl md:text-3xl font-bold text-[#2eb6f5]">
                   Nivaas
@@ -160,14 +154,9 @@ export default function Header() {
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div className="flex items-center space-x-2">
-              <div className="bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] p-2 rounded-xl">
-                <Home className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xl font-bold text-[#2eb6f5]">Nivaas</span>
-                <span className="text-xl font-bold text-gray-900">360</span>
-              </div>
+            <div className="flex items-center gap-1">
+              <span className="text-xl font-bold text-[#2eb6f5]">Nivaas</span>
+              <span className="text-xl font-bold text-gray-900">360</span>
             </div>
             <button
               onClick={closeMobileMenu}
