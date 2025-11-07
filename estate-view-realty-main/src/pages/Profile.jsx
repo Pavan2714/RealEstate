@@ -114,7 +114,6 @@ export default function Profile() {
           if (!res.ok) {
             console.error("Upload failed:", data);
             setUploadError(data.message || `Upload failed: ${res.status}`);
-            setUploading(false);
             return;
           }
 
@@ -123,11 +122,21 @@ export default function Profile() {
             console.log("Upload successful, updating Redux store");
             dispatch(signInSuccess(data.data));
             setUploadError(null);
+            // Clear file state after successful upload
+            setFile(undefined);
+            if (fileRef.current) {
+              fileRef.current.value = "";
+            }
           } else if (data.avatar) {
             // Alternative response format
             console.log("Upload successful (alt format), updating Redux store");
             dispatch(signInSuccess({ ...user, avatar: data.avatar }));
             setUploadError(null);
+            // Clear file state after successful upload
+            setFile(undefined);
+            if (fileRef.current) {
+              fileRef.current.value = "";
+            }
           } else {
             console.error("Unexpected response format:", data);
             setUploadError("Failed to update profile picture");
@@ -136,6 +145,7 @@ export default function Profile() {
           console.error("Error uploading image:", err);
           setUploadError(`Network error: ${err.message}`);
         } finally {
+          // Always clear uploading state
           setUploading(false);
         }
       };
@@ -161,6 +171,20 @@ export default function Profile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate form data
+    if (!formData.username || !formData.email) {
+      setUpdateError("Username and email are required");
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setUpdateError("Please enter a valid email address");
+      return;
+    }
+
     setUpdateLoading(true);
     setUpdateError(null);
     setUpdateSuccess(false);
@@ -174,6 +198,7 @@ export default function Profile() {
       });
 
       const data = await res.json();
+      console.log("Update response:", data);
 
       if (!res.ok) {
         setUpdateError(data.message || "Update failed");
@@ -185,13 +210,20 @@ export default function Profile() {
           setTimeout(() => {
             setUpdateSuccess(false);
           }, 3000);
+        } else if (data._id) {
+          // Alternative format: backend returns user directly
+          dispatch(signInSuccess(data));
+          setUpdateSuccess(true);
+          setTimeout(() => {
+            setUpdateSuccess(false);
+          }, 3000);
         } else {
           setUpdateError("Update failed. Please try again.");
         }
       }
     } catch (err) {
       console.error("Update error:", err);
-      setUpdateError("Update failed. Please try again.");
+      setUpdateError("Network error. Please check your connection.");
     } finally {
       setUpdateLoading(false);
     }
@@ -316,6 +348,7 @@ export default function Profile() {
                 placeholder="Username"
                 value={formData.username}
                 onChange={handleChange}
+                required
                 className="border-2 border-[#2eb6f5]/30 focus:border-[#2eb6f5] p-3 rounded-xl transition-colors duration-200 shadow-sm w-full bg-[#F7FBFF] font-medium focus:outline-none"
               />
               <label className="font-semibold text-[#2eb6f5]">Email</label>
@@ -325,6 +358,7 @@ export default function Profile() {
                 placeholder="Email"
                 value={formData.email}
                 onChange={handleChange}
+                required
                 className="border-2 border-[#2eb6f5]/30 focus:border-[#2eb6f5] p-3 rounded-xl transition-colors duration-200 shadow-sm w-full bg-[#F7FBFF] font-medium focus:outline-none"
               />
               <label className="font-semibold text-[#2eb6f5]">Phone</label>
@@ -338,12 +372,18 @@ export default function Profile() {
               />
             </div>
             {updateError && (
-              <p className="text-red-500 text-sm mt-2">{updateError}</p>
+              <div className="w-full p-3 bg-red-50 border border-red-200 rounded-xl">
+                <p className="text-red-600 text-sm text-center">
+                  {updateError}
+                </p>
+              </div>
             )}
             {updateSuccess && (
-              <p className="text-green-500 text-sm mt-2">
-                Profile updated successfully!
-              </p>
+              <div className="w-full p-3 bg-green-50 border border-green-200 rounded-xl">
+                <p className="text-green-600 text-sm text-center font-medium">
+                  Profile updated successfully!
+                </p>
+              </div>
             )}
             <button
               type="submit"
