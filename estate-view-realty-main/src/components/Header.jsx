@@ -9,7 +9,6 @@ import {
   ShoppingBag,
   Info,
   Mail,
-  User,
   CheckCircle,
   PlusCircle,
 } from "lucide-react";
@@ -176,12 +175,8 @@ export default function Header() {
         }`}
       >
         <div className="flex flex-col h-full">
-          {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div className="flex items-center gap-1">
-              <span className="text-xl font-bold text-[#2eb6f5]">Nivaas</span>
-              <span className="text-xl font-bold text-gray-900">360</span>
-            </div>
+          {/* Sidebar Header - Only Close Button */}
+          <div className="flex items-center justify-end p-6 border-b border-gray-200">
             <button
               onClick={closeMobileMenu}
               className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
@@ -300,18 +295,6 @@ export default function Header() {
                   <PlusCircle className="h-5 w-5 text-gray-600 group-hover:text-[#2eb6f5] transition-colors" />
                   <span className="font-medium text-gray-700 group-hover:text-[#2eb6f5] transition-colors">
                     Create Listing
-                  </span>
-                </button>
-              )}
-
-              {user && (
-                <button
-                  onClick={() => handleNavigation("/profile")}
-                  className="flex items-center space-x-3 w-full px-4 py-3 rounded-xl hover:bg-[#2eb6f5]/10 transition-all duration-300 group"
-                >
-                  <User className="h-5 w-5 text-gray-600 group-hover:text-[#2eb6f5] transition-colors" />
-                  <span className="font-medium text-gray-700 group-hover:text-[#2eb6f5] transition-colors">
-                    Profile
                   </span>
                 </button>
               )}
