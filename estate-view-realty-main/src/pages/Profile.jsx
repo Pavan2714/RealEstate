@@ -214,9 +214,7 @@ export default function Profile() {
           // Alternative format: backend returns user directly
           dispatch(signInSuccess(data));
           setUpdateSuccess(true);
-          setTimeout(() => {
-            setUpdateSuccess(false);
-          }, 3000);
+          setTimeout(() => navigate("/"), 3000);
         } else {
           setUpdateError("Update failed. Please try again.");
         }
