@@ -89,7 +89,7 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
           />
         </button>
 
-        {/* Optimized Hover Overlay */}
+        {/* Optimized Hover Overlay
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <Button
             onClick={handleViewDetails}
@@ -99,7 +99,7 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
             <Eye className="w-4 h-4 mr-2" />
             View Details
           </Button>
-        </div>
+        </div> */}
 
         {/* Status Badge */}
         {property.status && (
