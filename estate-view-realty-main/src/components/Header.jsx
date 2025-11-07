@@ -47,11 +47,13 @@ export default function Header() {
                   <Home className="h-6 w-6 text-white" />
                 </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] bg-clip-text text-transparent">
-                  Estate View
+              <div className="flex items-center gap-1">
+                <span className="text-2xl md:text-3xl font-bold text-[#2eb6f5]">
+                  Nivaas
                 </span>
-                <span className="text-xs text-gray-500 -mt-1">Realty</span>
+                <span className="text-2xl md:text-3xl font-bold text-gray-900">
+                  360
+                </span>
               </div>
             </Link>
 
@@ -162,11 +164,9 @@ export default function Header() {
               <div className="bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] p-2 rounded-xl">
                 <Home className="h-5 w-5 text-white" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-lg font-bold bg-gradient-to-r from-[#2eb6f5] to-[#1e90ff] bg-clip-text text-transparent">
-                  Estate View
-                </span>
-                <span className="text-xs text-gray-500 -mt-1">Realty</span>
+              <div className="flex items-center gap-1">
+                <span className="text-xl font-bold text-[#2eb6f5]">Nivaas</span>
+                <span className="text-xl font-bold text-gray-900">360</span>
               </div>
             </div>
             <button
