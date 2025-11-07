@@ -101,7 +101,7 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
           </Button>
         </div> */}
 
-        {/* Status Badge */}
+        {/* Status Badge
         {property.status && (
           <Badge
             className={`absolute top-4 left-4 ${
@@ -110,7 +110,7 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
           >
             For {property.status === "sell" ? "Sale" : "Rent"}
           </Badge>
-        )}
+        )} */}
 
         {/* Price Badge */}
         <span className="absolute bottom-4 left-4 bg-[#2eb6f5] text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-md backdrop-blur-sm">
