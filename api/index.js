@@ -17,7 +17,14 @@ const PORT = 3000;
 
 app.use(
   cors({
-    origin: process.env.VITE_FRONTEND_URL, // Use value from .env
+    // Allow one or more origins from environment variables.
+    // Keep a sensible default for local development.
+    origin: [
+      process.env.VITE_FRONTEND_URL || "http://localhost:8081",
+      process.env.VITE_BACKEND_URL,
+    ].filter(Boolean),
+
+    // Allow cookies to be sent (for auth via cookies)
     credentials: true,
   })
 );
