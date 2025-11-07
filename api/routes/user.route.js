@@ -3,8 +3,8 @@ import {
   test,
   uploadAvatar,
   updateUser,
+  deleteUser,
 } from "../controllers/user.controller.js"; // Importing the test controller
-import { deleteUser } from "../controllers/auth.controller.js";
 import { VerifyToken } from "../utils/VerifyToken.js";
 const router = express.Router();
 

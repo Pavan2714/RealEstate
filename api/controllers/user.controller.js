@@ -6,29 +6,6 @@ export const test = (req, res) => {
   });
 };
 
-export const deleteUser = async (req, res, next) => {
-  // Ensure req.user exists
-  if (!req.user) {
-    return next(errorHandler(401, "Authentication required!"));
-  }
-
-  // Compare IDs as strings to avoid type mismatch
-  if (req.user.id.toString() !== req.params.id.toString()) {
-    return next(errorHandler(401, "You can only delete your own account!"));
-  }
-
-  try {
-    const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser) {
-      return next(errorHandler(404, "User not found!"));
-    }
-    res.clearCookie("access_token");
-    res.status(200).json({ success: true, message: "User has been deleted!" });
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const uploadAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
@@ -103,6 +80,24 @@ export const updateUser = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteUser = async (req, res, next) => {
+  try {
+    if (req.user.id !== req.params.id) {
+      return next(errorHandler(401, "You can only delete your own account!"));
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+
+    res.clearCookie("access_token");
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully!",
     });
   } catch (error) {
     next(error);
