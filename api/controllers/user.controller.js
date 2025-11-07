@@ -73,3 +73,38 @@ export const uploadAvatar = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateUser = async (req, res, next) => {
+  try {
+    // Verify user is updating their own account
+    if (req.user.id !== req.params.id) {
+      return next(errorHandler(401, "You can only update your own account!"));
+    }
+
+    const { username, email, phone } = req.body;
+
+    // Update user
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          username,
+          email,
+          phone,
+        },
+      },
+      { new: true }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return next(errorHandler(404, "User not found!"));
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
