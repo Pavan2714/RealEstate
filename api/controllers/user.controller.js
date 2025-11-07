@@ -90,36 +90,41 @@ export const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // 1) Validate id to avoid CastError -> 500
+    // Validate id to prevent CastError
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(errorHandler(400, "Invalid user id"));
     }
 
-    // 2) Verify ownership (or allow admin)
-    if (!req.user || (req.user.id !== id && req.user.role !== "admin")) {
-      return next(errorHandler(401, "You can only delete your own account"));
+    // Verify auth context exists
+    if (!req.user) {
+      return next(errorHandler(401, "Unauthorized"));
     }
 
-    // 3) Ensure user exists
+    // Only owner or admin can delete
+    if (req.user.id !== id && req.user.role !== "admin") {
+      return next(errorHandler(403, "Forbidden"));
+    }
+
+    // Ensure user exists
     const user = await User.findById(id);
     if (!user) return next(errorHandler(404, "User not found"));
 
-    // 4) Delete related data (optional but safe)
+    // Optional: delete related listings but never crash if it fails
     try {
       await Listing.deleteMany({ userRef: id });
     } catch (e) {
-      // log and continue, don't crash delete
-      console.error("Failed deleting user listings:", e.message);
+      console.warn("Listing cleanup failed:", e.message);
     }
 
-    // 5) Delete user
+    // Delete user
     await User.findByIdAndDelete(id);
 
-    // 6) Clear auth cookie
+    // Clear cookie
     res.clearCookie("access_token", {
       httpOnly: true,
       sameSite: "none",
       secure: true,
+      path: "/",
     });
 
     return res.status(200).json({ success: true, message: "Account deleted" });
