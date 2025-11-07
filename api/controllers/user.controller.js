@@ -7,7 +7,6 @@ export const test = (req, res) => {
 };
 
 export const deleteUser = async (req, res, next) => {
-  // Ensure req.user exists
   if (!req.user) {
     return next(errorHandler(401, "Authentication required!"));
   }
