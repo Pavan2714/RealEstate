@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.get("/test", test);
 router.post("/upload/:id", VerifyToken, uploadAvatar);
-router.post("/update/:id", VerifyToken, updateUser);
+router.put("/update/:id", VerifyToken, updateUser);
 router.delete("/delete/:id", VerifyToken, deleteUser);
 
 export default router;
