@@ -88,18 +88,38 @@ export const updateUser = async (req, res, next) => {
 
 export const deleteUser = async (req, res, next) => {
   try {
+    // Verify user is deleting their own account
     if (req.user.id !== req.params.id) {
       return next(errorHandler(401, "You can only delete your own account!"));
     }
 
+    // Check if user exists
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return next(errorHandler(404, "User not found!"));
+    }
+
+    // Optional: Delete all user's listings
+    try {
+      await Listing.deleteMany({ userRef: req.params.id });
+      console.log("User listings deleted successfully");
+    } catch (listingError) {
+      console.error("Error deleting user listings:", listingError);
+      // Continue with user deletion even if listing deletion fails
+    }
+
+    // Delete the user
     await User.findByIdAndDelete(req.params.id);
 
+    // Clear the cookie
     res.clearCookie("access_token");
+
     res.status(200).json({
       success: true,
-      message: "User deleted successfully!",
+      message: "User account deleted successfully!",
     });
   } catch (error) {
+    console.error("Delete user error:", error);
     next(error);
   }
 };
