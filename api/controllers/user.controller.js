@@ -6,6 +6,29 @@ export const test = (req, res) => {
   });
 };
 
+export const deleteUser = async (req, res, next) => {
+  // Ensure req.user exists
+  if (!req.user) {
+    return next(errorHandler(401, "Authentication required!"));
+  }
+
+  // Compare IDs as strings to avoid type mismatch
+  if (req.user.id.toString() !== req.params.id.toString()) {
+    return next(errorHandler(401, "You can only delete your own account!"));
+  }
+
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    if (!deletedUser) {
+      return next(errorHandler(404, "User not found!"));
+    }
+    res.clearCookie("access_token");
+    res.status(200).json({ success: true, message: "User has been deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const uploadAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
@@ -83,53 +106,5 @@ export const updateUser = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
-  }
-};
-
-export const deleteUser = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-
-    // Validate id to prevent CastError
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return next(errorHandler(400, "Invalid user id"));
-    }
-
-    // Verify auth context exists
-    if (!req.user) {
-      return next(errorHandler(401, "Unauthorized"));
-    }
-
-    // Only owner or admin can delete
-    if (req.user.id !== id && req.user.role !== "admin") {
-      return next(errorHandler(403, "Forbidden"));
-    }
-
-    // Ensure user exists
-    const user = await User.findById(id);
-    if (!user) return next(errorHandler(404, "User not found"));
-
-    // Optional: delete related listings but never crash if it fails
-    try {
-      await Listing.deleteMany({ userRef: id });
-    } catch (e) {
-      console.warn("Listing cleanup failed:", e.message);
-    }
-
-    // Delete user
-    await User.findByIdAndDelete(id);
-
-    // Clear cookie
-    res.clearCookie("access_token", {
-      httpOnly: true,
-      sameSite: "none",
-      secure: true,
-      path: "/",
-    });
-
-    return res.status(200).json({ success: true, message: "Account deleted" });
-  } catch (err) {
-    console.error("deleteUser error:", err);
-    return next(errorHandler(500, "Failed to delete account"));
   }
 };
