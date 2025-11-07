@@ -28,3 +28,48 @@ export const deleteUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const uploadAvatar = async (req, res, next) => {
+  try {
+    const { avatar } = req.body;
+    const userId = req.params.id;
+
+    // Verify user is authenticated and matches the ID
+    if (req.user.id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    // Validate base64 image
+    if (!avatar || !avatar.startsWith("data:image")) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid image format",
+      });
+    }
+
+    // Update user avatar in database
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { avatar },
+      { new: true }
+    ).select("-password"); // Don't send password back
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updatedUser,
+      message: "Avatar uploaded successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

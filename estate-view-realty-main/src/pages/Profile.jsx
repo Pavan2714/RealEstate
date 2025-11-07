@@ -22,6 +22,7 @@ export default function Profile() {
   const { user } = useSelector((state) => state.user);
   const [file, setFile] = useState(undefined);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
   const [formData, setFormData] = useState({
     username: user?.username || "",
     email: user?.email || "",
@@ -71,8 +72,21 @@ export default function Profile() {
   }
 
   const handleFileUpload = useCallback(
-    (file) => {
+    async (file) => {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setUploadError("Please upload an image file");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError("Image size should be less than 5MB");
+        return;
+      }
+
       setUploading(true);
+      setUploadError(null);
 
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -80,22 +94,35 @@ export default function Profile() {
       reader.onload = async () => {
         try {
           const base64Image = reader.result;
+
           const res = await fetch(`${API_URL}/api/user/upload/${user._id}`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+            },
             credentials: "include",
             body: JSON.stringify({ avatar: base64Image }),
           });
 
           const data = await res.json();
+
           if (!res.ok) {
             console.error("Upload failed:", data.message || data);
-          } else {
-            // dispatch updated user object (API returns { success, data: user })
+            setUploadError(data.message || "Failed to upload image");
+            setUploading(false);
+            return;
+          }
+
+          // Update user in Redux store with new avatar
+          if (data.success && data.data) {
             dispatch(signInSuccess(data.data));
+            setUploadError(null);
+          } else {
+            setUploadError("Failed to update profile picture");
           }
         } catch (err) {
           console.error("Error uploading image:", err);
+          setUploadError("Network error. Please try again.");
         } finally {
           setUploading(false);
         }
@@ -103,6 +130,7 @@ export default function Profile() {
 
       reader.onerror = () => {
         console.error("Error reading file");
+        setUploadError("Error reading file. Please try again.");
         setUploading(false);
       };
     },
@@ -124,6 +152,7 @@ export default function Profile() {
     setUpdateLoading(true);
     setUpdateError(null);
     setUpdateSuccess(false);
+
     try {
       const res = await fetch(`${API_URL}/api/user/update/${user._id}`, {
         method: "PUT",
@@ -133,15 +162,23 @@ export default function Profile() {
       });
 
       const data = await res.json();
+
       if (!res.ok) {
         setUpdateError(data.message || "Update failed");
       } else {
         // API returns { success, data: updatedUser }
-        dispatch(signInSuccess(data.data));
-        setUpdateSuccess(true);
-        setTimeout(() => navigate("/"), 1500);
+        if (data.success && data.data) {
+          dispatch(signInSuccess(data.data));
+          setUpdateSuccess(true);
+          setTimeout(() => {
+            setUpdateSuccess(false);
+          }, 3000);
+        } else {
+          setUpdateError("Update failed. Please try again.");
+        }
       }
     } catch (err) {
+      console.error("Update error:", err);
       setUpdateError("Update failed. Please try again.");
     } finally {
       setUpdateLoading(false);
@@ -164,7 +201,6 @@ export default function Profile() {
       const data = await res.json();
       if (res.ok) {
         dispatch(deleteUserSuccess());
-        // ensure cookie removed client-side as fallback
         document.cookie =
           "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         navigate("/signup");
@@ -190,7 +226,6 @@ export default function Profile() {
         return;
       }
       await res.json().catch(() => ({}));
-      // client-side cookie clear fallback
       document.cookie =
         "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       dispatch(signOutUserSuccess());
@@ -232,10 +267,35 @@ export default function Profile() {
               />
               {uploading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
-                  <p className="text-white font-medium">Uploading...</p>
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <p className="text-white font-medium text-sm">
+                      Uploading...
+                    </p>
+                  </div>
                 </div>
               )}
+              <div className="absolute bottom-0 right-0 bg-[#2eb6f5] text-white p-2 rounded-full cursor-pointer hover:bg-[#1e90ff] transition-colors">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
+              </div>
             </div>
+
+            {/* Upload Error */}
+            {uploadError && (
+              <div className="w-full p-3 bg-red-50 border border-red-200 rounded-xl">
+                <p className="text-red-600 text-sm text-center">
+                  {uploadError}
+                </p>
+              </div>
+            )}
+
             <div className="w-full flex flex-col space-y-4">
               <label className="font-semibold text-[#2eb6f5]">Username</label>
               <input
@@ -270,12 +330,12 @@ export default function Profile() {
             )}
             {updateSuccess && (
               <p className="text-green-500 text-sm mt-2">
-                Profile updated successfully! Redirecting...
+                Profile updated successfully!
               </p>
             )}
             <button
               type="submit"
-              disabled={updateLoading}
+              disabled={updateLoading || uploading}
               className="w-full mt-4 px-5 py-3 bg-gradient-to-r from-[#1a1a1a] to-[#2eb6f5] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-60 hover:scale-[1.02]"
             >
               {updateLoading ? "Updating..." : "UPDATE"}
