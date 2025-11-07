@@ -70,10 +70,8 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
           }}
           loading="lazy"
         />
-
         {/* Simplified Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-
         {/* Favorite Button - Optimized */}
         <button
           className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md transition-transform duration-200 hover:scale-110 z-10 will-change-transform"
@@ -88,7 +86,6 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
             }`}
           />
         </button>
-
         {/* Optimized Hover Overlay
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <Button
@@ -100,8 +97,7 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
             View Details
           </Button>
         </div> */}
-
-        {/* Status Badge
+        Status Badge
         {property.status && (
           <Badge
             className={`absolute top-4 left-4 ${
@@ -110,8 +106,7 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
           >
             For {property.status === "sell" ? "Sale" : "Rent"}
           </Badge>
-        )} */}
-
+        )}
         {/* Price Badge */}
         <span className="absolute bottom-4 left-4 bg-[#2eb6f5] text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-md backdrop-blur-sm">
           ₹{property.regularPrice?.toLocaleString()}
@@ -119,7 +114,6 @@ const PropertyCard = ({ property, isFavorite, onToggleFavorite }) => {
             <span className="text-xs font-normal ml-1">/month</span>
           )}
         </span>
-
         {/* Offer Badge - Removed animate-pulse for performance */}
         {property.offer && discountAmount > 0 && (
           <Badge className="absolute top-14 left-4 bg-red-500 text-white font-bold shadow-md">

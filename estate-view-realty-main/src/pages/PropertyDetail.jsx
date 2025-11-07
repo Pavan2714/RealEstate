@@ -263,7 +263,7 @@ const PropertyDetail = () => {
 
                   {/* Property Badges */}
                   <div className="absolute top-4 left-4 flex flex-col gap-2">
-                    {property.status && (
+                    {/* {property.status && (
                       <Badge
                         className={`${
                           property.status === "sell"
@@ -273,7 +273,7 @@ const PropertyDetail = () => {
                       >
                         For {property.status === "sell" ? "Sale" : "Rent"}
                       </Badge>
-                    )}
+                    )} */}
 
                     {property.offer && discountAmount > 0 && (
                       <Badge className="bg-red-500 text-white font-bold animate-pulse">
