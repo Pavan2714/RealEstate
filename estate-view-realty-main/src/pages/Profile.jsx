@@ -79,9 +79,9 @@ export default function Profile() {
         return;
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setUploadError("Image size should be less than 5MB");
+      // Validate file size (max 2MB for better compatibility)
+      if (file.size > 2 * 1024 * 1024) {
+        setUploadError("Image size should be less than 2MB");
         return;
       }
 
@@ -95,6 +95,9 @@ export default function Profile() {
         try {
           const base64Image = reader.result;
 
+          console.log("Uploading image for user:", user._id);
+          console.log("Image size:", base64Image.length, "characters");
+
           const res = await fetch(`${API_URL}/api/user/upload/${user._id}`, {
             method: "POST",
             headers: {
@@ -104,25 +107,34 @@ export default function Profile() {
             body: JSON.stringify({ avatar: base64Image }),
           });
 
+          console.log("Response status:", res.status);
           const data = await res.json();
+          console.log("Response data:", data);
 
           if (!res.ok) {
-            console.error("Upload failed:", data.message || data);
-            setUploadError(data.message || "Failed to upload image");
+            console.error("Upload failed:", data);
+            setUploadError(data.message || `Upload failed: ${res.status}`);
             setUploading(false);
             return;
           }
 
-          // Update user in Redux store with new avatar
+          // Check different response formats
           if (data.success && data.data) {
+            console.log("Upload successful, updating Redux store");
             dispatch(signInSuccess(data.data));
             setUploadError(null);
+          } else if (data.avatar) {
+            // Alternative response format
+            console.log("Upload successful (alt format), updating Redux store");
+            dispatch(signInSuccess({ ...user, avatar: data.avatar }));
+            setUploadError(null);
           } else {
+            console.error("Unexpected response format:", data);
             setUploadError("Failed to update profile picture");
           }
         } catch (err) {
           console.error("Error uploading image:", err);
-          setUploadError("Network error. Please try again.");
+          setUploadError(`Network error: ${err.message}`);
         } finally {
           setUploading(false);
         }
@@ -134,7 +146,7 @@ export default function Profile() {
         setUploading(false);
       };
     },
-    [user._id, dispatch]
+    [user, dispatch]
   );
 
   useEffect(() => {
