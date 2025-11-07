@@ -294,7 +294,7 @@ export default function Header() {
               {/* Create Listing - Only for Sellers (Mobile) */}
               {user && user.role === "seller" && (
                 <button
-                  onClick={() => handleNavigation("/create-listing")}
+                  onClick={() => handleNavigation("/create")}
                   className="flex items-center space-x-3 w-full px-4 py-3 rounded-xl hover:bg-[#2eb6f5]/10 transition-all duration-300 group"
                 >
                   <PlusCircle className="h-5 w-5 text-gray-600 group-hover:text-[#2eb6f5] transition-colors" />
