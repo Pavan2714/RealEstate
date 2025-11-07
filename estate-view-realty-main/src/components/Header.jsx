@@ -115,7 +115,7 @@ export default function Header() {
               {/* Create Listing Button - Only for Sellers */}
               {user && user.role === "seller" && (
                 <Link
-                  to="/create"
+                  to="/createlisting"
                   className="px-4 py-2.5 bg-white border-2 border-[#2eb6f5] text-[#2eb6f5] rounded-xl hover:bg-[#2eb6f5] hover:text-white hover:shadow-lg transition-all duration-300 font-medium flex items-center space-x-2"
                 >
                   <PlusCircle className="h-5 w-5" />
@@ -294,7 +294,7 @@ export default function Header() {
               {/* Create Listing - Only for Sellers (Mobile) */}
               {user && user.role === "seller" && (
                 <button
-                  onClick={() => handleNavigation("/create")}
+                  onClick={() => handleNavigation("/createlisting")}
                   className="flex items-center space-x-3 w-full px-4 py-3 rounded-xl hover:bg-[#2eb6f5]/10 transition-all duration-300 group"
                 >
                   <PlusCircle className="h-5 w-5 text-gray-600 group-hover:text-[#2eb6f5] transition-colors" />
