@@ -324,7 +324,7 @@ export default function Signup() {
                 </div>
               </div>
 
-              <OAuth />
+              <OAuthSignUp />
             </form>
 
             {/* Sign In Link */}
