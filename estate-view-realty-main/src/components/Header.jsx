@@ -175,19 +175,18 @@ export default function Header() {
         }`}
       >
         <div className="flex flex-col h-full">
-          {/* Sidebar Header - Only Close Button */}
-          <div className="flex items-center justify-end p-6 border-b border-gray-200">
-            <button
-              onClick={closeMobileMenu}
-              className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
-            >
-              <X className="h-6 w-6 text-gray-700" />
-            </button>
-          </div>
-
-          {/* User Profile Section (if logged in) */}
-          {user && (
+          {/* User Profile Section with Close Button (if logged in) */}
+          {user ? (
             <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+                <button
+                  onClick={closeMobileMenu}
+                  className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+                >
+                  <X className="h-6 w-6 text-gray-700" />
+                </button>
+              </div>
               <div
                 onClick={() => handleNavigation("/profile")}
                 className="flex items-center space-x-3 cursor-pointer group"
@@ -207,6 +206,17 @@ export default function Header() {
                   </p>
                 </div>
               </div>
+            </div>
+          ) : (
+            // Close button only for non-logged in users
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+              <button
+                onClick={closeMobileMenu}
+                className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-6 w-6 text-gray-700" />
+              </button>
             </div>
           )}
 
