@@ -1,66 +1,101 @@
-import express from "express"; // Import Express framework // For MongoDB connection
+import express from "express";
 import cors from "cors";
-import dotenv from "dotenv"; // To load environment variables from .env file
-import Userrouter from "./routes/user.route.js"; // Importing user routes
-import authRouter from "./routes/auth.routes.js"; // Importing authentication routes
-import { listingRouter } from "./routes/listing.route.js"; // Importing property listing routes
-import cookieParser from "cookie-parser"; // To parse cookies from requests
-import buyingRouter from "./routes/Buying.routes.js"; // Importing buying routes
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import Userrouter from "./routes/user.route.js";
+import authRouter from "./routes/auth.routes.js";
+import { listingRouter } from "./routes/listing.route.js";
+import buyingRouter from "./routes/Buying.routes.js";
 import rentalRouter from "./routes/rental.routes.js";
 import contactRouter from "./routes/contact.route.js";
 import connectDB from "./config/db.js";
 
-dotenv.config(); // Load environment variables from .env file
+dotenv.config();
 
-const app = express(); // Create an Express application instance
-const PORT = 3000;
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(
-  cors({
-    // Allow one or more origins from environment variables.
-    // Keep a sensible default for local development.
-    origin: [
-      process.env.VITE_FRONTEND_URL || "http://localhost:8081",
-      process.env.VITE_BACKEND_URL,
-    ].filter(Boolean),
+/*
+  CORS configuration:
+  - allow known origins from env
+  - allow localhost in non-production
+  - enable credentials so cookies are sent
+*/
+const whitelist = [
+  process.env.VITE_FRONTEND_URL,
+  process.env.CLIENT_URL,
+  process.env.DEV_ORIGIN || "http://localhost:8081",
+].filter(Boolean);
 
-    // Allow cookies to be sent (for auth via cookies)
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow non-browser requests like curl or server-to-server (no origin)
+    if (!origin) return callback(null, true);
 
-// ✅ Connect to MongoDB
-await connectDB(); // Connect to MongoDB using the config function
+    // allow localhost in non-production
+    if (process.env.NODE_ENV !== "production" && origin.includes("localhost")) {
+      return callback(null, true);
+    }
 
-// ✅ Middlewares
+    if (whitelist.includes(origin)) return callback(null, true);
+    return callback(new Error("CORS policy: Origin not allowed"), false);
+  },
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Accept",
+    "Origin",
+    "X-Requested-With",
+    "Cache-Control",
+  ],
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
 
-// Increase JSON payload limit for base64 images (default is too small)
-app.use(express.json({ limit: "10mb" })); // Allows large JSON requests (like images)
-app.use(express.urlencoded({ limit: "10mb", extended: true })); // Handles URL-encoded form data
-app.use(cookieParser()); // Parses cookies from incoming requests
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
-// ✅ Define API routes
+// Connect to MongoDB
+await connectDB();
+
+// Middlewares
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(cookieParser());
+
+// Routes
 app.get("/", (req, res) => res.send("Server is Live!"));
-app.use("/api/user", Userrouter); // User-related routes (e.g., profile, update user)
-app.use("/api/auth", authRouter); // Authentication routes (e.g., login, register)
-app.use("/api/listing", listingRouter); // Property listing routes (CRUD for properties)
-app.use("/api/buying", buyingRouter); // Routes for buying transactions
+app.use("/api/user", Userrouter);
+app.use("/api/auth", authRouter);
+app.use("/api/listing", listingRouter);
+app.use("/api/buying", buyingRouter);
 app.use("/api/rental", rentalRouter);
 app.use("/api/contact", contactRouter);
 
-// ✅ Global Error Handling Middleware
+// Global error handler
 app.use((err, req, res, next) => {
-  const statuscode = err.statuscode || 500; // Default to 500 if no custom status code
-  const message = err.message || "Something went wrong"; // Default message
-  console.error(err.stack); // Log error stack trace for debugging
+  if (err && err.message && err.message.startsWith("CORS policy")) {
+    return res.status(403).json({
+      success: false,
+      status: 403,
+      message: err.message,
+    });
+  }
+
+  const statuscode = err.statuscode || 500;
+  const message = err.message || "Something went wrong";
+  console.error(err.stack);
   return res.status(statuscode).json({
     success: false,
     status: statuscode,
-    message: message,
+    message,
   });
 });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log("Allowed CORS origins:", whitelist);
 });
-// Export the Express app for use in other files (e.g., server.js)
+
+export default app;

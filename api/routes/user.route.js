@@ -1,8 +1,9 @@
 import express from "express";
-import { deleteUser, test } from "../controllers/user.controller.js"; // Importing the test controller
+import { test } from "../controllers/user.controller.js"; // Importing the test controller
 import {
   updateUser,
   uploadProfileImage,
+  deleteUser,
 } from "../controllers/auth.controller.js";
 import { VerifyToken } from "../utils/VerifyToken.js";
 const router = express.Router();

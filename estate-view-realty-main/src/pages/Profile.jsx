@@ -1,3 +1,4 @@
+// ...existing code...
 import { useSelector, useDispatch } from "react-redux";
 import { useRef, useState, useEffect, useCallback } from "react";
 import {
@@ -29,6 +30,17 @@ export default function Profile() {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateError, setUpdateError] = useState(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+
+  // Keep form in sync if store user updates
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        username: user.username || "",
+        email: user.email || "",
+        phone: user.phone || "",
+      });
+    }
+  }, [user]);
 
   // Safely get profile image
   const profileImg = user?.avatar || user?.photo || defaultProfileImg;
@@ -63,10 +75,11 @@ export default function Profile() {
           });
 
           const data = await res.json();
-          if (data.success === false) {
-            console.error(data.message);
+          if (!res.ok) {
+            console.error("Upload failed:", data.message || data);
           } else {
-            dispatch(signInSuccess(data));
+            // dispatch updated user object (API returns { success, data: user })
+            dispatch(signInSuccess(data.data));
           }
         } catch (err) {
           console.error("Error uploading image:", err);
@@ -90,10 +103,7 @@ export default function Profile() {
   }, [file, handleFileUpload]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
@@ -103,16 +113,18 @@ export default function Profile() {
     setUpdateSuccess(false);
     try {
       const res = await fetch(`${API_URL}/api/user/update/${user._id}`, {
-        method: "POST",
+        method: "PUT", // use PUT to match server route
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(formData),
       });
+
       const data = await res.json();
-      if (data.success === false) {
-        setUpdateError(data.message);
+      if (!res.ok) {
+        setUpdateError(data.message || "Update failed");
       } else {
-        dispatch(signInSuccess(data));
+        // API returns { success, data: updatedUser }
+        dispatch(signInSuccess(data.data));
         setUpdateSuccess(true);
         navigate("/");
       }
@@ -139,6 +151,7 @@ export default function Profile() {
       const data = await res.json();
       if (res.ok) {
         dispatch(deleteUserSuccess());
+        // ensure cookie removed client-side as fallback
         document.cookie =
           "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         navigate("/signup");
@@ -159,11 +172,12 @@ export default function Profile() {
         credentials: "include",
       });
       if (!res.ok) {
-        const errorData = await res.json();
+        const errorData = await res.json().catch(() => ({}));
         dispatch(signOutUserFailure(errorData.message || "Sign out failed"));
         return;
       }
-      await res.json();
+      await res.json().catch(() => ({}));
+      // client-side cookie clear fallback
       document.cookie =
         "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       dispatch(signOutUserSuccess());
@@ -173,7 +187,6 @@ export default function Profile() {
     }
   };
 
-  // ...existing code...
   return (
     <div className="min-h-screen flex items-center justify-center py-12 bg-gradient-to-br from-[#1a1a1a] via-[#2eb6f5] to-[#2eb6f5]">
       <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-[#2eb6f5]/30 flex flex-col items-center px-8 py-10 space-y-8">
@@ -268,5 +281,5 @@ export default function Profile() {
       </div>
     </div>
   );
-  // ...existing code...
 }
+// ...existing code...
