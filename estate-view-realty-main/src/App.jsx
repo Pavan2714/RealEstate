@@ -29,6 +29,9 @@ import Buy from "./pages/Buy"; // Page listing properties for sale
 import Rent from "./pages/Rent"; // Page listing properties for rent
 import Purchased from "@/pages/Purchased"; // Shows purchased property details
 import Favorites from "@/pages/Favorites";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
 // ✅ Create a QueryClient instance for React Query
 const queryClient = new QueryClient();
 // This is used to manage and cache all API calls globally
@@ -69,6 +72,8 @@ const App = () => (
           <Route path="/property/:id" element={<PropertyDetail />} />
           {/* ✅ Catch-all route: if user navigates to an unknown path, show 404 Not Found page */}
           <Route path="*" element={<NotFound />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
