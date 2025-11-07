@@ -3,7 +3,6 @@ import {
   test,
   uploadAvatar,
   updateUser,
-  deleteUser,
 } from "../controllers/user.controller.js"; // Importing the test controller
 import { VerifyToken } from "../utils/VerifyToken.js";
 import { deleteUser } from "../controllers/auth.controller.js";
