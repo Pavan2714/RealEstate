@@ -20,6 +20,8 @@ app.use(
     origin: [
       "https://real-estate-frontend-zeta-blond.vercel.app",
       "https://real-estate-backend-alpha-seven.vercel.app",
+      "https://real-estate-backend-seven-gamma.vercel.app",
+      "https://real-estate-nine-ecru.vercel.app",
     ],
     credentials: true,
   })
