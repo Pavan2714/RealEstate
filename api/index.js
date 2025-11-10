@@ -15,42 +15,90 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-/* ✅ IMPORTANT on Render/Proxies: enables Express to see HTTPS and set Secure cookies correctly */
+// Trust proxy for Vercel/Render
 app.set("trust proxy", 1);
 
-/* ✅ CORS: allow your FE origins, allow Authorization header, and credentials (for cookies if you use them) */
-const ALLOWED_ORIGINS = [
-  "https://real-estate-frontend-zeta-blond.vercel.app", // your frontend
-  // Add other FRONTEND origins only. Do NOT add your backend domain here.
-];
+// Allowed origins
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://real-estate-frontend-zeta-blond.vercel.app",
+  process.env.FRONTEND_URL,
+  process.env.CLIENT_URL,
+].filter(Boolean);
 
+// ✅ CORS - MUST BE BEFORE OTHER MIDDLEWARE
 app.use(
   cors({
-    origin: (origin, cb) => {
-      // allow same-origin tools (like curl/Postman with no Origin)
-      if (!origin) return cb(null, true);
-      if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-      return cb(new Error(`CORS blocked for origin: ${origin}`), false);
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn("❌ Blocked origin:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"], // <-- allow token header
-    credentials: true, // needed only if you use cookies
+    credentials: true, // ✅ CRITICAL for cookies
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+      "Cookie",
+    ],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 
-/* Some hosts require explicit OPTIONS handling for preflight */
-app.options("*", cors());
+// Handle preflight
+app.options("*", (req, res) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With, Accept, Origin, Cookie"
+  );
+  res.sendStatus(204);
+});
 
-/* ✅ Body & cookies */
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+// ✅ Cookie parser MUST be after CORS
 app.use(cookieParser());
 
-/* ✅ DB connect before routes */
+// Body parsers
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+// Debug middleware (remove in production)
+app.use((req, res, next) => {
+  console.log(`📡 ${req.method} ${req.path}`);
+  console.log("Origin:", req.headers.origin || "none");
+  console.log("Cookies:", req.cookies);
+  next();
+});
+
 await connectDB();
 
-/* ✅ Routes */
-app.get("/", (req, res) => res.send("Server is Live!"));
+// Routes
+app.get("/", (req, res) =>
+  res.json({
+    status: "OK",
+    allowedOrigins,
+    cookies: req.cookies,
+  })
+);
+
 app.use("/api/user", Userrouter);
 app.use("/api/auth", authRouter);
 app.use("/api/listing", listingRouter);
@@ -58,23 +106,20 @@ app.use("/api/buying", buyingRouter);
 app.use("/api/rental", rentalRouter);
 app.use("/api/contact", contactRouter);
 
-/* 🔎 Optional: debug endpoint to confirm what headers/cookies actually arrive */
-app.get("/api/_debug", (req, res) =>
-  res.json({ headers: req.headers, cookies: req.cookies })
-);
+// 404
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: "Route not found" });
+});
 
-/* ✅ Global error handler */
+// Error handler
 app.use((err, req, res, next) => {
-  const statuscode = err.statuscode || 500;
+  const statuscode = err.statuscode || err.statusCode || 500;
   const message = err.message || "Something went wrong";
-  console.error(err.stack);
-  return res.status(statuscode).json({
-    success: false,
-    status: statuscode,
-    message,
-  });
+  console.error("❌ Error:", message);
+  res.status(statuscode).json({ success: false, status: statuscode, message });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server running on ${PORT}`);
+  console.log("🔒 Allowed Origins:", allowedOrigins);
 });
