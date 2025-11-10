@@ -53,6 +53,7 @@ export const signupBuyer = (req, res, next) => signup(req, res, next, "buyer");
 export const signupSeller = (req, res, next) =>
   signup(req, res, next, "seller");
 // In auth.controller.js - signin/signup
+// In auth.controller.js
 export const signin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -75,17 +76,19 @@ export const signin = async (req, res, next) => {
 
     const { password: pass, ...rest } = validUser._doc;
 
-    // ✅ IMPORTANT: Cookie settings for cross-origin
-    res
-      .cookie("access_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // true in production
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" for cross-origin
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        path: "/",
-      })
-      .status(200)
-      .json(rest);
+    // ✅ PROPER COOKIE SETTINGS FOR VERCEL
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true, // Always true for production
+      sameSite: "none", // Required for cross-origin
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
+    };
+
+    // Don't set domain - let browser handle it
+    console.log("🍪 Setting cookie with options:", cookieOptions);
+
+    res.cookie("access_token", token, cookieOptions).status(200).json(rest);
   } catch (error) {
     next(error);
   }

@@ -1,53 +1,62 @@
-// utils/VerifyToken.js
 import jwt from "jsonwebtoken";
+import { errorHandler } from "./error.js";
 
 export const VerifyToken = (req, res, next) => {
-  try {
-    // Headers can be case-insensitive; Node lowercases them, but be safe
-    const rawAuth = (
-      req.headers.authorization ??
-      req.headers.Authorization ??
-      ""
-    ).trim();
+  // ✅ ADD DETAILED LOGGING
+  console.log("🔍 VerifyToken called for:", req.method, req.path);
+  console.log("🔍 Headers:", JSON.stringify(req.headers, null, 2));
+  console.log("🔍 Cookies received:", req.cookies);
 
-    let token = null;
-    if (rawAuth && /^Bearer\s+/i.test(rawAuth)) {
-      token = rawAuth.replace(/^Bearer\s+/i, "").trim();
+  if (!process.env.JWT_SECRET) {
+    console.error("❌ JWT_SECRET not configured");
+    return next(errorHandler(500, "JWT secret not configured"));
+  }
+
+  const authHeader = req.headers.authorization || "";
+  const bearerToken = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : null;
+  const cookieToken = req.cookies?.access_token || null;
+
+  console.log("🔍 Bearer token:", bearerToken ? "Present" : "Missing");
+  console.log("🔍 Cookie token:", cookieToken ? "Present" : "Missing");
+
+  const token = bearerToken || cookieToken;
+
+  if (!token) {
+    console.error("❌ No token found in request");
+    return next(errorHandler(401, "Unauthorized: token missing"));
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
+    if (err) {
+      console.error("❌ Token verification failed:", err.name, err.message);
+      if (err.name === "TokenExpiredError") {
+        return next(errorHandler(401, "Unauthorized: token expired"));
+      }
+      if (err.name === "JsonWebTokenError") {
+        return next(errorHandler(403, "Forbidden: invalid token"));
+      }
+      return next(errorHandler(403, "Forbidden: token verification failed"));
     }
 
-    // Accept common cookie names in case your login route set a different one
-    const c = req.cookies || {};
-    token = token || c.access_token || c.token || c.jwt || c.session || null;
-
-    if (!token) {
-      // Optional: temporary debug to confirm what the server actually sees
-      // console.log("Auth headers seen:", req.headers);
-      // console.log("Cookies seen:", req.cookies);
-      return res
-        .status(401)
-        .json({ success: false, message: "Unauthorized: token missing" });
+    const userId = payload.id || payload._id;
+    if (!userId) {
+      console.error("❌ Token missing user id");
+      return next(errorHandler(400, "Invalid token payload: missing user id"));
     }
 
-    if (!process.env.JWT_SECRET) {
-      // This prevents opaque 500s if secret is missing in Render env
-      return res.status(500).json({
-        success: false,
-        message: "Server misconfig: JWT_SECRET not set",
-      });
-    }
-
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.user = {
-      id: payload.id || payload._id,
-      role: payload.role,
-      ...payload, // keep other claims if you need them
+      id: userId,
+      role: payload.role || "buyer",
     };
 
+    console.log(
+      "✅ Token verified for user:",
+      req.user.id,
+      "role:",
+      req.user.role
+    );
     return next();
-  } catch (err) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized: token invalid or expired",
-    });
-  }
+  });
 };

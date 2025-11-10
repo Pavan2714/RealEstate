@@ -238,13 +238,24 @@ export default function Profile() {
     try {
       dispatch(deleteUserStart());
 
-      // No headers/body to avoid preflight; credentials to send cookie
+      // ✅ ADD DEBUG LOGGING
+      console.log("🔍 Attempting delete for user:", user._id);
+      console.log("🔍 API URL:", `${API_URL}/api/user/delete/${user._id}`);
+      console.log("🔍 Current cookies:", document.cookie);
+
       const res = await fetch(`${API_URL}/api/user/delete/${user._id}`, {
         method: "DELETE",
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
       });
 
+      console.log("🔍 Response status:", res.status);
+      console.log("🔍 Response headers:", [...res.headers.entries()]);
+
       const data = await res.json().catch(() => ({}));
+      console.log("🔍 Response data:", data);
 
       if (res.ok) {
         dispatch(deleteUserSuccess());
@@ -257,6 +268,7 @@ export default function Profile() {
         alert(data.message || "Failed to delete account");
       }
     } catch (error) {
+      console.error("❌ Delete error:", error);
       dispatch(deleteUserFailure(error.message));
       alert(error.message);
     }
