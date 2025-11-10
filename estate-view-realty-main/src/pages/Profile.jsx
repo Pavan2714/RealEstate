@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import {
   deleteUserFailure,
   deleteUserStart,
@@ -19,7 +19,17 @@ export default function Profile() {
   const fileRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // ⬇️ expects your JWT to be on user.token (adjust if different)
   const { user } = useSelector((state) => state.user);
+  const token = user?.token || null;
+
+  // Build auth headers only if token exists
+  const authHeaders = useMemo(
+    () => (token ? { Authorization: `Bearer ${token}` } : {}),
+    [token]
+  );
+
   const [file, setFile] = useState(undefined);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
@@ -32,7 +42,6 @@ export default function Profile() {
   const [updateError, setUpdateError] = useState(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
-  // Keep form in sync if store user updates
   useEffect(() => {
     if (user) {
       setFormData({
@@ -43,10 +52,8 @@ export default function Profile() {
     }
   }, [user]);
 
-  // Safely get profile image
   const profileImg = user?.avatar || user?.photo || defaultProfileImg;
 
-  // Prevent rendering if user is null
   if (!user) {
     return (
       <>
@@ -73,13 +80,10 @@ export default function Profile() {
 
   const handleFileUpload = useCallback(
     async (file) => {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         setUploadError("Please upload an image file");
         return;
       }
-
-      // Validate file size (max 2MB for better compatibility)
       if (file.size > 2 * 1024 * 1024) {
         setUploadError("Image size should be less than 2MB");
         return;
@@ -102,8 +106,9 @@ export default function Profile() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              ...authHeaders, // ⬅️ send Bearer token if present
             },
-            credentials: "include",
+            credentials: "include", // also send cookie if you use cookie auth
             body: JSON.stringify({ avatar: base64Image }),
           });
 
@@ -117,26 +122,16 @@ export default function Profile() {
             return;
           }
 
-          // Check different response formats
           if (data.success && data.data) {
-            console.log("Upload successful, updating Redux store");
             dispatch(signInSuccess(data.data));
             setUploadError(null);
-            // Clear file state after successful upload
             setFile(undefined);
-            if (fileRef.current) {
-              fileRef.current.value = "";
-            }
+            if (fileRef.current) fileRef.current.value = "";
           } else if (data.avatar) {
-            // Alternative response format
-            console.log("Upload successful (alt format), updating Redux store");
             dispatch(signInSuccess({ ...user, avatar: data.avatar }));
             setUploadError(null);
-            // Clear file state after successful upload
             setFile(undefined);
-            if (fileRef.current) {
-              fileRef.current.value = "";
-            }
+            if (fileRef.current) fileRef.current.value = "";
           } else {
             console.error("Unexpected response format:", data);
             setUploadError("Failed to update profile picture");
@@ -145,7 +140,6 @@ export default function Profile() {
           console.error("Error uploading image:", err);
           setUploadError(`Network error: ${err.message}`);
         } finally {
-          // Always clear uploading state
           setUploading(false);
         }
       };
@@ -156,13 +150,11 @@ export default function Profile() {
         setUploading(false);
       };
     },
-    [user, dispatch]
+    [user, dispatch, authHeaders]
   );
 
   useEffect(() => {
-    if (file) {
-      handleFileUpload(file);
-    }
+    if (file) handleFileUpload(file);
   }, [file, handleFileUpload]);
 
   const handleChange = (e) => {
@@ -172,13 +164,10 @@ export default function Profile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form data
     if (!formData.username || !formData.email) {
       setUpdateError("Username and email are required");
       return;
     }
-
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setUpdateError("Please enter a valid email address");
@@ -192,7 +181,10 @@ export default function Profile() {
     try {
       const res = await fetch(`${API_URL}/api/user/update/${user._id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders, // ⬅️ Bearer token
+        },
         credentials: "include",
         body: JSON.stringify(formData),
       });
@@ -203,20 +195,14 @@ export default function Profile() {
       if (!res.ok) {
         setUpdateError(data.message || "Update failed");
       } else {
-        // API returns { success, data: updatedUser }
         if (data.success && data.data) {
           dispatch(signInSuccess(data.data));
           setUpdateSuccess(true);
-          setTimeout(() => {
-            setUpdateSuccess(false);
-          }, 3000);
+          setTimeout(() => setUpdateSuccess(false), 3000);
         } else if (data._id) {
-          // Alternative format: backend returns user directly
           dispatch(signInSuccess(data));
           setUpdateSuccess(true);
-          setTimeout(() => {
-            setUpdateSuccess(false);
-          }, 3000);
+          setTimeout(() => setUpdateSuccess(false), 3000);
         } else {
           setUpdateError("Update failed. Please try again.");
         }
@@ -238,24 +224,15 @@ export default function Profile() {
     try {
       dispatch(deleteUserStart());
 
-      // ✅ ADD DEBUG LOGGING
-      console.log("🔍 Attempting delete for user:", user._id);
-      console.log("🔍 API URL:", `${API_URL}/api/user/delete/${user._id}`);
-      console.log("🔍 Current cookies:", document.cookie);
-
       const res = await fetch(`${API_URL}/api/user/delete/${user._id}`, {
         method: "DELETE",
-        credentials: "include",
         headers: {
-          Accept: "application/json",
+          ...authHeaders, // ⬅️ Bearer token
         },
+        credentials: "include",
       });
 
-      console.log("🔍 Response status:", res.status);
-      console.log("🔍 Response headers:", [...res.headers.entries()]);
-
       const data = await res.json().catch(() => ({}));
-      console.log("🔍 Response data:", data);
 
       if (res.ok) {
         dispatch(deleteUserSuccess());
@@ -268,7 +245,6 @@ export default function Profile() {
         alert(data.message || "Failed to delete account");
       }
     } catch (error) {
-      console.error("❌ Delete error:", error);
       dispatch(deleteUserFailure(error.message));
       alert(error.message);
     }
@@ -280,6 +256,9 @@ export default function Profile() {
       const res = await fetch(`${API_URL}/api/auth/signout`, {
         method: "POST",
         credentials: "include",
+        headers: {
+          ...authHeaders, // optional, but harmless
+        },
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -348,7 +327,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Upload Error */}
             {uploadError && (
               <div className="w-full p-3 bg-red-50 border border-red-200 rounded-xl">
                 <p className="text-red-600 text-sm text-center">
@@ -388,6 +366,7 @@ export default function Profile() {
                 className="border-2 border-[#2eb6f5]/30 focus:border-[#2eb6f5] p-3 rounded-xl transition-colors duration-200 shadow-sm w-full bg-[#F7FBFF] font-medium focus:outline-none"
               />
             </div>
+
             {updateError && (
               <div className="w-full p-3 bg-red-50 border border-red-200 rounded-xl">
                 <p className="text-red-600 text-sm text-center">
@@ -402,6 +381,7 @@ export default function Profile() {
                 </p>
               </div>
             )}
+
             <button
               type="submit"
               disabled={updateLoading || uploading}
@@ -410,6 +390,7 @@ export default function Profile() {
               {updateLoading ? "Updating..." : "UPDATE"}
             </button>
           </form>
+
           <div className="flex justify-between w-full pt-2">
             <span
               onClick={handleDeleteUser}
